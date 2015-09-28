@@ -1308,6 +1308,7 @@ static void * MWVideoPlayerObservation = &MWVideoPlayerObservation;
         if (_titleView) {
             _titleView.title = [self publishDateStringAtIndex:_currentPageIndex];
             _titleView.subtitle = [NSString stringWithFormat:@"%lu/%lu", (unsigned long)(_currentPageIndex+1), (unsigned long)numberOfPhotos];
+            [_titleView sizeToFit];
         } else {
             if ([_delegate respondsToSelector:@selector(photoBrowser:titleForPhotoAtIndex:)]) {
                 self.title = [_delegate photoBrowser:self titleForPhotoAtIndex:_currentPageIndex];
