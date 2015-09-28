@@ -180,7 +180,8 @@ static void * MWVideoPlayerObservation = &MWVideoPlayerObservation;
         _nextButton = [[UIBarButtonItem alloc] initWithImage:nextButtonImage style:UIBarButtonItemStylePlain target:self action:@selector(gotoNextPage)];
     }
     if (self.displayActionButton) {
-        _actionButton = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemAction target:self action:@selector(actionButtonPressed:)];
+        UIImage *moreActionIcon = [UIImage imageForResourcePath:@"MWPhotoBrowser.bundle/UIBarButtonItemMoreActions@2x" ofType:@"png" inBundle:[NSBundle bundleForClass:[self class]]];
+        _actionButton = [[UIBarButtonItem alloc] initWithImage:moreActionIcon style:UIBarButtonItemStylePlain target:self action:@selector(actionButtonPressed:)];
     }
     
     // Update
@@ -217,7 +218,8 @@ static void * MWVideoPlayerObservation = &MWVideoPlayerObservation;
     if ([self.navigationController.viewControllers objectAtIndex:0] == self) {
         // We're first on stack so show done button
 //        _doneButton = [[UIBarButtonItem alloc] initWithTitle:NSLocalizedString(@"Done", nil) style:UIBarButtonItemStylePlain target:self action:@selector(doneButtonPressed:)];
-        _doneButton = [[UIBarButtonItem alloc] initWithImage:[UIImage imageForResourcePath:@"MWPhotoBrowser.bundle/UINavigationBarInbilinArrowLeft" ofType:@"png" inBundle:[NSBundle bundleForClass:[self class]]] style:UIBarButtonItemStylePlain target:self action:@selector(doneButtonPressed:)];
+        UIImage *arrowLeft = [UIImage imageForResourcePath:@"MWPhotoBrowser.bundle/UINavigationBarInbilinArrowLeft@2x" ofType:@"png" inBundle:[NSBundle bundleForClass:[self class]]];
+        _doneButton = [[UIBarButtonItem alloc] initWithImage:arrowLeft style:UIBarButtonItemStylePlain target:self action:@selector(doneButtonPressed:)];
         // Set appearance
         [_doneButton setBackgroundImage:nil forState:UIControlStateNormal barMetrics:UIBarMetricsDefault];
         [_doneButton setBackgroundImage:nil forState:UIControlStateNormal barMetrics:UIBarMetricsLandscapePhone];
