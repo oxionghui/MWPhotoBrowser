@@ -374,9 +374,6 @@ static void * MWVideoPlayerObservation = &MWVideoPlayerObservation;
     }
     [self setNavBarAppearance:animated];
     
-    // Update UI
-	[self hideControlsAfterDelay];
-    
     // Initial appearance
     if (!_viewHasAppearedInitially) {
         if (_startOnGrid) {
@@ -862,7 +859,7 @@ static void * MWVideoPlayerObservation = &MWVideoPlayerObservation;
             if ([photo caption]) captionView = [[MWInbilinCaptionView alloc] initWithPhoto:photo];
         }
     }
-    captionView.hidden = [self areControlsHidden]; // Initial alpha
+    captionView.alpha = [self areControlsHidden] ? 0 : 1;
     return captionView;
 }
 
