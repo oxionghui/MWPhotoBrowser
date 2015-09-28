@@ -12,6 +12,7 @@
 #import "MWPhotoBrowserPrivate.h"
 #import "SDImageCache.h"
 #import "UIImage+MWPhotoBrowser.h"
+#import <pop/POP.h>
 
 #define PADDING                  10
 
@@ -80,6 +81,8 @@ static void * MWVideoPlayerObservation = &MWVideoPlayerObservation;
     _thumbPhotos = [[NSMutableArray alloc] init];
     _currentGridContentOffset = CGPointMake(0, CGFLOAT_MAX);
     _didSavePreviousStateOfNavBar = NO;
+    _applicationWindow = [[[UIApplication sharedApplication] delegate] window];
+    _animationDuration = 0.28;
     self.automaticallyAdjustsScrollViewInsets = NO;
     
     // Listen for MWPhoto notifications
@@ -189,6 +192,11 @@ static void * MWVideoPlayerObservation = &MWVideoPlayerObservation;
         [self.view addGestureRecognizer:swipeGesture];
     }
     
+    if ([self scaleAnimationImageViewAtIndex:self.currentIndex]) {
+        // Transition animation
+        [self performPresentAnimation];
+    }
+
 	// Super
     [super viewDidLoad];
 	
@@ -541,13 +549,176 @@ static void * MWVideoPlayerObservation = &MWVideoPlayerObservation;
     
 }
 
+#pragma mark - pop Animation
+
+- (void)animateView:(UIView *)view toFrame:(CGRect)frame completion:(void (^)(void))completion
+{
+    POPSpringAnimation *animation = [POPSpringAnimation animationWithPropertyNamed:kPOPViewFrame];
+    [animation setSpringBounciness:6];
+    [animation setDynamicsMass:1];
+    [animation setToValue:[NSValue valueWithCGRect:frame]];
+    [view pop_addAnimation:animation forKey:nil];
+    
+    if (completion)
+    {
+        [animation setCompletionBlock:^(POPAnimation *animation, BOOL finished) {
+            completion();
+        }];
+    }
+}
+
+#pragma mark - Animation
+
+- (UIImage*)rotateImageToCurrentOrientation:(UIImage*)image
+{
+    if(UIInterfaceOrientationIsLandscape([UIApplication sharedApplication].statusBarOrientation))
+    {
+        UIImageOrientation orientation = ([UIApplication sharedApplication].statusBarOrientation == UIInterfaceOrientationLandscapeLeft) ?UIImageOrientationLeft : UIImageOrientationRight;
+        
+        UIImage *rotatedImage = [[UIImage alloc] initWithCGImage:image.CGImage
+                                                           scale:1.0
+                                                     orientation:orientation];
+        
+        image = rotatedImage;
+    }
+    
+    return image;
+}
+
+- (void)performPresentAnimation {
+    self.view.alpha = 0.0f;
+    _pagingScrollView.alpha = 0.0f;
+    
+    UIImage *scaleImage = [self scaleImageAtIndex:self.currentIndex];
+    UIImageView *scaleAniamtionImageView = [self scaleAnimationImageViewAtIndex:self.currentIndex];
+    
+    UIImage *imageFromView = scaleImage ? scaleImage : [self getImageFromView:scaleAniamtionImageView];
+    imageFromView = [self rotateImageToCurrentOrientation:imageFromView];
+    
+    CGRect scaleAnimationViewOriginalFrame = [scaleAniamtionImageView.superview convertRect:scaleAniamtionImageView.frame toView:nil];
+    
+    CGRect screenBound = [[UIScreen mainScreen] bounds];
+    CGFloat screenWidth = screenBound.size.width;
+    CGFloat screenHeight = screenBound.size.height;
+    
+    UIView *fadeView = [[UIView alloc] initWithFrame:CGRectMake(0, 0, screenWidth, screenHeight)];
+    fadeView.backgroundColor = [UIColor clearColor];
+    [_applicationWindow addSubview:fadeView];
+    
+    UIImageView *resizableImageView = [[UIImageView alloc] initWithImage:imageFromView];
+    resizableImageView.frame = scaleAnimationViewOriginalFrame;
+    resizableImageView.clipsToBounds = YES;
+    resizableImageView.contentMode = UIViewContentModeScaleAspectFill;
+    resizableImageView.backgroundColor = [UIColor colorWithWhite:0 alpha:1];
+    [_applicationWindow addSubview:resizableImageView];
+    scaleAniamtionImageView.hidden = YES;
+    
+    void (^completion)() = ^() {
+        scaleAniamtionImageView.hidden = NO;
+        self.view.alpha = 1.0f;
+        _pagingScrollView.alpha = 1.0f;
+        resizableImageView.backgroundColor = [UIColor colorWithWhite:0 alpha:1];
+        [fadeView removeFromSuperview];
+        [resizableImageView removeFromSuperview];
+    };
+    
+    [UIView animateWithDuration:_animationDuration animations:^{
+        fadeView.backgroundColor = [UIColor blackColor];
+    } completion:nil];
+    
+    float scaleFactor = (imageFromView ? imageFromView.size.width : screenWidth) / screenWidth;
+    CGRect finalImageViewFrame = CGRectMake(0, (screenHeight/2)-((imageFromView.size.height / scaleFactor)/2), screenWidth, imageFromView.size.height / scaleFactor);
+    
+    if(_usePopAnimation)
+    {
+        [self animateView:resizableImageView
+                  toFrame:finalImageViewFrame
+               completion:completion];
+    }
+    else
+    {
+        [UIView animateWithDuration:_animationDuration animations:^{
+            resizableImageView.layer.frame = finalImageViewFrame;
+        } completion:^(BOOL finished) {
+            completion();
+        }];
+    }
+}
+
+- (void)performCloseAnimationWithScrollView:(MWZoomingScrollView *)scrollView {
+    float fadeAlpha = 1 - fabs(scrollView.frame.origin.y)/scrollView.frame.size.height;
+    
+    UIImage *imageFromView = [self imageForPhoto:scrollView.photo];
+    
+    //imageFromView = [self rotateImageToCurrentOrientation:imageFromView];
+    
+    CGRect screenBound = [[UIScreen mainScreen] bounds];
+    CGFloat screenWidth = screenBound.size.width;
+    CGFloat screenHeight = screenBound.size.height;
+    
+    float scaleFactor = imageFromView.size.width / screenWidth;
+    
+    UIView *fadeView = [[UIView alloc] initWithFrame:CGRectMake(0, 0, screenWidth, screenHeight)];
+    fadeView.backgroundColor = [UIColor blackColor];
+    fadeView.alpha = fadeAlpha;
+    [_applicationWindow addSubview:fadeView];
+    
+    UIImageView *resizableImageView = [[UIImageView alloc] initWithImage:imageFromView];
+    resizableImageView.frame = (imageFromView) ? CGRectMake(0, (screenHeight/2)-((imageFromView.size.height / scaleFactor)/2)+scrollView.frame.origin.y, screenWidth, imageFromView.size.height / scaleFactor) : CGRectZero;
+    resizableImageView.contentMode = UIViewContentModeScaleAspectFill;
+    resizableImageView.backgroundColor = [UIColor clearColor];
+    resizableImageView.clipsToBounds = YES;
+    [_applicationWindow addSubview:resizableImageView];
+    self.view.hidden = YES;
+    
+    UIImageView *scaleAniamtionImageView = [self scaleAnimationImageViewAtIndex:self.currentIndex];
+    scaleAniamtionImageView.hidden = YES;
+    
+    CGRect scaleAnimationViewOriginalFrame = [scaleAniamtionImageView.superview convertRect:scaleAniamtionImageView.frame toView:nil];
+    
+    void (^completion)() = ^() {
+        scaleAniamtionImageView.hidden = NO;
+        
+        [fadeView removeFromSuperview];
+        [resizableImageView removeFromSuperview];
+        
+        // Dismiss view controller
+        if ([_delegate respondsToSelector:@selector(photoBrowserDidFinishModalPresentation:)]) {
+            // Call delegate method and let them dismiss us
+            [_delegate photoBrowserDidFinishModalPresentation:self];
+        } else  {
+            [self dismissViewControllerAnimated:NO completion:nil];
+        }
+    };
+    
+    [UIView animateWithDuration:_animationDuration animations:^{
+        fadeView.alpha = 0;
+        self.view.backgroundColor = [UIColor clearColor];
+    } completion:nil];
+    
+    if(_usePopAnimation)
+    {
+        [self animateView:resizableImageView
+                  toFrame:scaleAnimationViewOriginalFrame
+               completion:completion];
+    }
+    else
+    {
+        [UIView animateWithDuration:_animationDuration animations:^{
+            resizableImageView.layer.frame = scaleAnimationViewOriginalFrame;
+        } completion:^(BOOL finished) {
+            completion();
+        }];
+    }
+}
+
 #pragma mark - Rotation
 
 - (BOOL)shouldAutorotateToInterfaceOrientation:(UIInterfaceOrientation)toInterfaceOrientation {
     return YES;
 }
 
-- (NSUInteger)supportedInterfaceOrientations {
+- (UIInterfaceOrientationMask)supportedInterfaceOrientations {
     return UIInterfaceOrientationMaskAll;
 }
 
@@ -738,6 +909,33 @@ static void * MWVideoPlayerObservation = &MWVideoPlayerObservation;
             }
         }
     }
+}
+
+- (UIImage *)scaleImageAtIndex:(NSUInteger)index {
+    if ([self.delegate respondsToSelector:@selector(photoBrowser:scaleImageAtIndex:)]) {
+        id <MWPhoto> scaleImage = [self.delegate photoBrowser:self scaleImageAtIndex:index];
+        return [self imageForPhoto:scaleImage];
+    } else {
+        return nil;
+    }
+}
+
+- (UIImageView *)scaleAnimationImageViewAtIndex:(NSUInteger)index {
+    if ([self.delegate respondsToSelector:@selector(photoBrowser:scaleAnimationImageViewAtIndex:)]) {
+        return [self.delegate photoBrowser:self scaleAnimationImageViewAtIndex:index];
+    } else {
+        return nil;
+    }
+}
+
+#pragma mark - Utility
+
+- (UIImage*)getImageFromView:(UIView *)view {
+    UIGraphicsBeginImageContextWithOptions(view.bounds.size, YES, [UIScreen mainScreen].scale);
+    [view.layer renderInContext:UIGraphicsGetCurrentContext()];
+    UIImage *image = UIGraphicsGetImageFromCurrentImageContext();
+    UIGraphicsEndImageContext();
+    return image;
 }
 
 #pragma mark - MWPhoto Loading Notification
@@ -1539,12 +1737,17 @@ static void * MWVideoPlayerObservation = &MWVideoPlayerObservation;
                 return;
             }
         }
-        // Dismiss view controller
-        if ([_delegate respondsToSelector:@selector(photoBrowserDidFinishModalPresentation:)]) {
-            // Call delegate method and let them dismiss us
-            [_delegate photoBrowserDidFinishModalPresentation:self];
-        } else  {
-            [self dismissViewControllerAnimated:YES completion:nil];
+        if ([self scaleAnimationImageViewAtIndex:self.currentIndex]) {
+            MWZoomingScrollView *scrollView = [self pageDisplayedAtIndex:_currentPageIndex];
+            [self performCloseAnimationWithScrollView:scrollView];
+        } else {
+            // Dismiss view controller
+            if ([_delegate respondsToSelector:@selector(photoBrowserDidFinishModalPresentation:)]) {
+                // Call delegate method and let them dismiss us
+                [_delegate photoBrowserDidFinishModalPresentation:self];
+            } else  {
+                [self dismissViewControllerAnimated:YES completion:nil];
+            }
         }
     }
 }

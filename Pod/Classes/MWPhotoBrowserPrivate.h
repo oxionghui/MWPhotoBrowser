@@ -72,6 +72,7 @@
     BOOL _viewHasAppearedInitially;
     CGPoint _currentGridContentOffset;
     
+    UIWindow *_applicationWindow;
 }
 
 // Properties

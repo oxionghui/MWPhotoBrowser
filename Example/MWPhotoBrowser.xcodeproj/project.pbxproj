@@ -41,6 +41,7 @@
 		873B8AEB1B1F5CCA007FD442 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 873B8AEA1B1F5CCA007FD442 /* Main.storyboard */; };
 		BBD9ABBBC6D859245030E9BA /* libPods-MWPhotoBrowser_Tests.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 2BD41C6E3DA363EE7B81636E /* libPods-MWPhotoBrowser_Tests.a */; };
 		BDF7E0625C136532C64B3038 /* libPods-MWPhotoBrowser_Example.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 9C165E5EE0D40A4673EB6CB0 /* libPods-MWPhotoBrowser_Example.a */; };
+		DD10B63E1BB84D7C005E2641 /* AnimationDemoViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = DD10B63D1BB84D7C005E2641 /* AnimationDemoViewController.m */; settings = {ASSET_TAGS = (); }; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -101,6 +102,8 @@
 		9C165E5EE0D40A4673EB6CB0 /* libPods-MWPhotoBrowser_Example.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-MWPhotoBrowser_Example.a"; sourceTree = BUILT_PRODUCTS_DIR; };
 		B5C85CB7FE89F584D392C9CF /* README.md */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = net.daringfireball.markdown; name = README.md; path = ../README.md; sourceTree = "<group>"; };
 		CA6EC4575DA50FD5A6F8685B /* Pods-MWPhotoBrowser_Tests.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-MWPhotoBrowser_Tests.debug.xcconfig"; path = "Pods/Target Support Files/Pods-MWPhotoBrowser_Tests/Pods-MWPhotoBrowser_Tests.debug.xcconfig"; sourceTree = "<group>"; };
+		DD10B63C1BB84D7C005E2641 /* AnimationDemoViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = AnimationDemoViewController.h; sourceTree = "<group>"; };
+		DD10B63D1BB84D7C005E2641 /* AnimationDemoViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = AnimationDemoViewController.m; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -213,6 +216,8 @@
 				6003F5A8195388D20070C39A /* Images.xcassets */,
 				4C18E1431B47F05900E3D63A /* Local Media */,
 				6003F594195388D20070C39A /* Supporting Files */,
+				DD10B63C1BB84D7C005E2641 /* AnimationDemoViewController.h */,
+				DD10B63D1BB84D7C005E2641 /* AnimationDemoViewController.m */,
 			);
 			name = Example;
 			path = MWPhotoBrowser;
@@ -431,6 +436,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				DD10B63E1BB84D7C005E2641 /* AnimationDemoViewController.m in Sources */,
 				4C18E11B1B47E72800E3D63A /* AppDelegate.m in Sources */,
 				6003F59A195388D20070C39A /* main.m in Sources */,
 				4C18E11C1B47E72800E3D63A /* Menu.m in Sources */,

@@ -10,6 +10,7 @@
 #import "Menu.h"
 #import "SDImageCache.h"
 #import "MWCommon.h"
+#import "AnimationDemoViewController.h"
 
 @implementation Menu
 
@@ -87,7 +88,10 @@
 - (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section {
     NSInteger rows = 9;
     @synchronized(_assets) {
-        if (_assets.count) rows++;
+//        if (_assets.count) rows++;
+        if (_assets.count) {
+            rows += 2;
+        }
     }
     return rows;
 }
@@ -154,6 +158,12 @@
             cell.detailTextLabel.text = @"media from device library";
             break;
         }
+        case 10:
+        {
+            cell.textLabel.text = @"Animation";
+            cell.detailTextLabel.text = @"scale animation";
+        }
+            break;
 		default: break;
 	}
     return cell;
@@ -1107,6 +1117,13 @@
             }
 			break;
         }
+        case 10:
+        {
+            AnimationDemoViewController *animationViewController = [AnimationDemoViewController new];
+            [self.navigationController pushViewController:animationViewController animated:YES];
+            return;
+        }
+            break;
 		default: break;
 	}
     self.photos = photos;
