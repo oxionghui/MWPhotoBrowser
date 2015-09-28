@@ -13,6 +13,7 @@
 #import "SDImageCache.h"
 #import "UIImage+MWPhotoBrowser.h"
 #import <pop/POP.h>
+#import "MWInbilinCaptionView.h"
 
 #define PADDING                  10
 
@@ -841,17 +842,17 @@ static void * MWVideoPlayerObservation = &MWVideoPlayerObservation;
     return photo;
 }
 
-- (MWCaptionView *)captionViewForPhotoAtIndex:(NSUInteger)index {
-    MWCaptionView *captionView = nil;
+- (UIView <MWCaptionView> *)captionViewForPhotoAtIndex:(NSUInteger)index {
+    UIView <MWCaptionView> *captionView = nil;
     if ([_delegate respondsToSelector:@selector(photoBrowser:captionViewForPhotoAtIndex:)]) {
         captionView = [_delegate photoBrowser:self captionViewForPhotoAtIndex:index];
     } else {
         id <MWPhoto> photo = [self photoAtIndex:index];
         if ([photo respondsToSelector:@selector(caption)]) {
-            if ([photo caption]) captionView = [[MWCaptionView alloc] initWithPhoto:photo];
+            if ([photo caption]) captionView = [[MWInbilinCaptionView alloc] initWithPhoto:photo];
         }
     }
-    captionView.alpha = [self areControlsHidden] ? 0 : 1; // Initial alpha
+    captionView.hidden = [self areControlsHidden]; // Initial alpha
     return captionView;
 }
 
@@ -1007,7 +1008,7 @@ static void * MWVideoPlayerObservation = &MWVideoPlayerObservation;
 			MWLog(@"Added page at index %lu", (unsigned long)index);
             
             // Add caption
-            MWCaptionView *captionView = [self captionViewForPhotoAtIndex:index];
+            UIView <MWCaptionView> *captionView = [self captionViewForPhotoAtIndex:index];
             if (captionView) {
                 captionView.frame = [self frameForCaptionView:captionView atIndex:index];
                 [_pagingScrollView addSubview:captionView];
@@ -1201,7 +1202,7 @@ static void * MWVideoPlayerObservation = &MWVideoPlayerObservation;
 	return CGRectIntegral(CGRectMake(0, self.view.bounds.size.height - height, self.view.bounds.size.width, height));
 }
 
-- (CGRect)frameForCaptionView:(MWCaptionView *)captionView atIndex:(NSUInteger)index {
+- (CGRect)frameForCaptionView:(UIView <MWCaptionView> *)captionView atIndex:(NSUInteger)index {
     CGRect pageFrame = [self frameForPageAtIndex:index];
     CGSize captionSize = [captionView sizeThatFits:CGSizeMake(pageFrame.size.width, 0)];
     CGRect captionFrame = CGRectMake(pageFrame.origin.x,
@@ -1613,7 +1614,7 @@ static void * MWVideoPlayerObservation = &MWVideoPlayerObservation;
         // Captions
         for (MWZoomingScrollView *page in _visiblePages) {
             if (page.captionView) {
-                MWCaptionView *v = page.captionView;
+                UIView<MWCaptionView> *v = page.captionView;
                 // Pass any index, all we're interested in is the Y
                 CGRect captionFrame = [self frameForCaptionView:v atIndex:0];
                 captionFrame.origin.x = v.frame.origin.x; // Reset X
@@ -1637,7 +1638,7 @@ static void * MWVideoPlayerObservation = &MWVideoPlayerObservation;
         // Captions
         for (MWZoomingScrollView *page in _visiblePages) {
             if (page.captionView) {
-                MWCaptionView *v = page.captionView;
+                UIView<MWCaptionView> *v = page.captionView;
                 // Pass any index, all we're interested in is the Y
                 CGRect captionFrame = [self frameForCaptionView:v atIndex:0];
                 captionFrame.origin.x = v.frame.origin.x; // Reset X

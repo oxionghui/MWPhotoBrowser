@@ -10,6 +10,7 @@
 #import "MWPhotoProtocol.h"
 #import "MWTapDetectingImageView.h"
 #import "MWTapDetectingView.h"
+#import "MWCaptionViewProtocol.h"
 
 @class MWPhotoBrowser, MWPhoto, MWCaptionView;
 
@@ -19,7 +20,7 @@
 
 @property () NSUInteger index;
 @property (nonatomic) id <MWPhoto> photo;
-@property (nonatomic, weak) MWCaptionView *captionView;
+@property (nonatomic, weak) UIView<MWCaptionView> *captionView;
 @property (nonatomic, weak) UIButton *selectedButton;
 @property (nonatomic, weak) UIButton *playButton;
 

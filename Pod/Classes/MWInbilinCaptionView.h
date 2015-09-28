@@ -7,7 +7,8 @@
 //
 
 #import <UIKit/UIKit.h>
+#import "MWCaptionViewProtocol.h"
 
-@interface MWInbilinCaptionView : UIView
+@interface MWInbilinCaptionView : UIView <MWCaptionView>
 
 @end
