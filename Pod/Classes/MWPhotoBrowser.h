@@ -38,6 +38,15 @@
 
 - (id <MWPhoto>)photoBrowser:(MWPhotoBrowser *)photoBrowser scaleImageAtIndex:(NSUInteger)index;
 - (UIImageView *)photoBrowser:(MWPhotoBrowser *)photoBrowser scaleAnimationImageViewAtIndex:(NSUInteger)index;
+- (Class)titleViewClassInPhotoBrowser:(MWPhotoBrowser *)photoBrowser;
+
+- (NSUInteger)photoBrowser:(MWPhotoBrowser *)photoBrowser praiseNumAtIndex:(NSUInteger)index isPraise:(BOOL*)isPraise;
+- (NSUInteger)photoBrowser:(MWPhotoBrowser *)photoBrowser commentNumAtIndex:(NSUInteger)index isComment:(BOOL*)isComment;
+- (void)photoBrowser:(MWPhotoBrowser *)photoBrowser didPraisePhotoAtIndex:(NSInteger)index;
+- (NSString *)photoBrowser:(MWPhotoBrowser *)photoBrowser publishDateStringAtIndex:(NSUInteger)index;
+- (void)photoBrowser:(MWPhotoBrowser *)photoBrowser didDeletePhotoAtIndex:(NSInteger)index;
+- (void)photoBrowser:(MWPhotoBrowser *)photoBrowser didCommentPhotoAtIndex:(NSInteger)index;
+- (NSURL *)photoBrowser:(MWPhotoBrowser *)photoBrowser profileImgUrlAtIndex:(NSUInteger)index;
 
 @end
 

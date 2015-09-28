@@ -30,6 +30,4 @@
 // the full width of the screen
 - (CGSize)sizeThatFits:(CGSize)size;
 
-@property (nonatomic, assign) BOOL hidden;
-
 @end

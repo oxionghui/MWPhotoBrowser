@@ -243,6 +243,15 @@ static void * MWVideoPlayerObservation = &MWVideoPlayerObservation;
         _previousViewControllerBackButton = previousViewController.navigationItem.backBarButtonItem; // remember previous
         previousViewController.navigationItem.backBarButtonItem = newBackButton;
     }
+    
+    if ([self.delegate respondsToSelector:@selector(titleViewClassInPhotoBrowser:)]) {
+        Class titleViewClass = [self.delegate titleViewClassInPhotoBrowser:self];
+        if (titleViewClass) {
+            UIView<MWTitleView> *titleView = [[titleViewClass alloc] init];
+            self.navigationItem.titleView = titleView;
+            _titleView = titleView;
+        }
+    }
 
     // Toolbar items
     BOOL hasItems = NO;
@@ -930,6 +939,14 @@ static void * MWVideoPlayerObservation = &MWVideoPlayerObservation;
     }
 }
 
+- (NSString *)publishDateStringAtIndex:(NSUInteger)index {
+    NSString *publishDateString = nil;
+    if ([self.delegate respondsToSelector:@selector(photoBrowser:publishDateStringAtIndex:)]) {
+        publishDateString = [self.delegate photoBrowser:self publishDateStringAtIndex:index];
+    }
+    return publishDateString;
+}
+
 #pragma mark - Utility
 
 - (UIImage*)getImageFromView:(UIView *)view {
@@ -1288,10 +1305,15 @@ static void * MWVideoPlayerObservation = &MWVideoPlayerObservation;
             self.title = [NSString stringWithFormat:@"%lu %@", (unsigned long)numberOfPhotos, photosText];
         }
     } else if (numberOfPhotos > 1) {
-        if ([_delegate respondsToSelector:@selector(photoBrowser:titleForPhotoAtIndex:)]) {
-            self.title = [_delegate photoBrowser:self titleForPhotoAtIndex:_currentPageIndex];
+        if (_titleView) {
+            _titleView.title = [self publishDateStringAtIndex:_currentPageIndex];
+            _titleView.subtitle = [NSString stringWithFormat:@"%lu/%lu", (unsigned long)(_currentPageIndex+1), (unsigned long)numberOfPhotos];
         } else {
-            self.title = [NSString stringWithFormat:@"%lu %@ %lu", (unsigned long)(_currentPageIndex+1), NSLocalizedString(@"of", @"Used in the context: 'Showing 1 of 3 items'"), (unsigned long)numberOfPhotos];
+            if ([_delegate respondsToSelector:@selector(photoBrowser:titleForPhotoAtIndex:)]) {
+                self.title = [_delegate photoBrowser:self titleForPhotoAtIndex:_currentPageIndex];
+            } else {
+                self.title = [NSString stringWithFormat:@"%lu %@ %lu", (unsigned long)(_currentPageIndex+1), NSLocalizedString(@"of", @"Used in the context: 'Showing 1 of 3 items'"), (unsigned long)numberOfPhotos];
+            }
         }
 	} else {
 		self.title = nil;

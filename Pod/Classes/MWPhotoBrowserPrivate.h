@@ -11,6 +11,7 @@
 #import <MediaPlayer/MediaPlayer.h>
 #import "MWGridViewController.h"
 #import "MWZoomingScrollView.h"
+#import "MWTitleViewProtocol.h"
 
 // Declare private methods of browser
 @interface MWPhotoBrowser () {
@@ -73,6 +74,8 @@
     CGPoint _currentGridContentOffset;
     
     UIWindow *_applicationWindow;
+    
+    UIView<MWTitleView> *_titleView;
 }
 
 // Properties
