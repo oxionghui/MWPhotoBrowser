@@ -46,7 +46,7 @@ static const CGFloat maxHeight = 110;
     _textView.showsVerticalScrollIndicator = NO;
     _textView.showsHorizontalScrollIndicator = NO;
     _textView.editable = NO;
-    _textView.contentInset = UIEdgeInsetsMake(verticalPadding, horizontalPadding, verticalPadding, horizontalPadding);
+    _textView.textContainerInset = UIEdgeInsetsMake(verticalPadding, horizontalPadding, verticalPadding, horizontalPadding);
     if ([_photo respondsToSelector:@selector(caption)]) {
         _textView.text = [_photo caption] ? [_photo caption] : @" ";
     }
