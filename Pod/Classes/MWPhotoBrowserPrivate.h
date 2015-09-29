@@ -12,6 +12,7 @@
 #import "MWGridViewController.h"
 #import "MWZoomingScrollView.h"
 #import "MWTitleViewProtocol.h"
+#import "MWInbilinActionBar.h"
 
 // Declare private methods of browser
 @interface MWPhotoBrowser () {
@@ -33,6 +34,7 @@
 	NSUInteger _pageIndexBeforeRotation;
 	
 	// Navigation & controls
+    MWInbilinActionBar *_actionBar;
 	UIToolbar *_toolbar;
 	NSTimer *_controlVisibilityTimer;
 	UIBarButtonItem *_previousButton, *_nextButton, *_actionButton, *_doneButton;

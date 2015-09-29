@@ -171,6 +171,12 @@ static void * MWVideoPlayerObservation = &MWVideoPlayerObservation;
     _toolbar.barStyle = UIBarStyleBlackTranslucent;
     _toolbar.autoresizingMask = UIViewAutoresizingFlexibleTopMargin | UIViewAutoresizingFlexibleWidth;
     
+    if ([self.delegate respondsToSelector:@selector(shouldShowActionBarInPhotoBrowser:)] &&
+        [self.delegate shouldShowActionBarInPhotoBrowser:self]) {
+        _actionBar = [[MWInbilinActionBar alloc] initWithFrame:[self frameForToolbarAtOrientation:self.interfaceOrientation] photoBrowser:self];
+        _actionBar.autoresizingMask = UIViewAutoresizingFlexibleTopMargin | UIViewAutoresizingFlexibleWidth;
+    }
+    
     // Toolbar Items
     if (self.displayNavArrows) {
         NSString *arrowPathFormat = @"MWPhotoBrowser.bundle/UIBarButtonItemArrow%@";
@@ -303,6 +309,10 @@ static void * MWVideoPlayerObservation = &MWVideoPlayerObservation;
         [_toolbar removeFromSuperview];
     } else {
         [self.view addSubview:_toolbar];
+    }
+    
+    if (_actionBar) {
+        [self.view addSubview:_actionBar];
     }
     
     // Update nav
@@ -505,6 +515,10 @@ static void * MWVideoPlayerObservation = &MWVideoPlayerObservation;
 	
 	// Toolbar
 	_toolbar.frame = [self frameForToolbarAtOrientation:self.interfaceOrientation];
+    
+    if (_actionBar) {
+        _actionBar.frame = [self frameForToolbarAtOrientation:self.interfaceOrientation];
+    }
     
 	// Remember index
 	NSUInteger indexPriorToLayout = _currentPageIndex;
@@ -748,9 +762,6 @@ static void * MWVideoPlayerObservation = &MWVideoPlayerObservation;
 	
 	// Perform layout
 	_currentPageIndex = _pageIndexBeforeRotation;
-	
-	// Delay control holding
-	[self hideControlsAfterDelay];
     
     // Layout
     [self layoutVisiblePages];
@@ -1221,7 +1232,7 @@ static void * MWVideoPlayerObservation = &MWVideoPlayerObservation;
     CGRect pageFrame = [self frameForPageAtIndex:index];
     CGSize captionSize = [captionView sizeThatFits:CGSizeMake(pageFrame.size.width, 0)];
     CGRect captionFrame = CGRectMake(pageFrame.origin.x,
-                                     pageFrame.size.height - captionSize.height - (_toolbar.superview?_toolbar.frame.size.height:0),
+                                     pageFrame.size.height - captionSize.height - (_toolbar.superview?_toolbar.frame.size.height:0) - (_actionBar?_actionBar.frame.size.height:0),
                                      pageFrame.size.width,
                                      captionSize.height);
     return CGRectIntegral(captionFrame);
@@ -1329,7 +1340,10 @@ static void * MWVideoPlayerObservation = &MWVideoPlayerObservation;
         _actionButton.enabled = YES;
         _actionButton.tintColor = nil;
     }
-	
+    
+    if (_actionBar) {
+        [_actionBar updateData:_currentPageIndex];
+    }
 }
 
 - (void)jumpToPageAtIndex:(NSUInteger)index animated:(BOOL)animated {
@@ -1340,10 +1354,6 @@ static void * MWVideoPlayerObservation = &MWVideoPlayerObservation;
         [_pagingScrollView setContentOffset:CGPointMake(pageFrame.origin.x - PADDING, 0) animated:animated];
 		[self updateNavigation];
 	}
-	
-	// Update timer to give more time
-	[self hideControlsAfterDelay];
-	
 }
 
 - (void)gotoPreviousPage {

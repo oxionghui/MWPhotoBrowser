@@ -40,6 +40,9 @@
 - (UIImageView *)photoBrowser:(MWPhotoBrowser *)photoBrowser scaleAnimationImageViewAtIndex:(NSUInteger)index;
 - (Class)titleViewClassInPhotoBrowser:(MWPhotoBrowser *)photoBrowser;
 
+- (BOOL)shouldShowActionBarInPhotoBrowser:(MWPhotoBrowser *)photoBrowser;
+- (BOOL)photoBrowser:(MWPhotoBrowser *)photoBrowser shouldShowApplyCallActionButtonAtIndex:(NSUInteger)index;
+- (BOOL)photoBrowser:(MWPhotoBrowser *)photoBrowser shouldShowFreeCallActionButtonAtIndex:(NSUInteger)index;
 - (NSUInteger)photoBrowser:(MWPhotoBrowser *)photoBrowser praiseNumAtIndex:(NSUInteger)index isPraise:(BOOL*)isPraise;
 - (NSUInteger)photoBrowser:(MWPhotoBrowser *)photoBrowser commentNumAtIndex:(NSUInteger)index isComment:(BOOL*)isComment;
 - (void)photoBrowser:(MWPhotoBrowser *)photoBrowser didPraisePhotoAtIndex:(NSInteger)index;
