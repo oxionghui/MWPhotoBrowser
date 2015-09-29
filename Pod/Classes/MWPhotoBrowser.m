@@ -1664,6 +1664,12 @@ static void * MWVideoPlayerObservation = &MWVideoPlayerObservation;
         _toolbar.frame = [self frameForToolbarAtOrientation:self.interfaceOrientation];
         if (hidden) _toolbar.frame = CGRectOffset(_toolbar.frame, 0, animatonOffset);
         _toolbar.alpha = alpha;
+        
+        if (_actionBar) {
+            _actionBar.frame = [self frameForToolbarAtOrientation:self.interfaceOrientation];
+            if (hidden) _actionBar.frame = CGRectOffset(_actionBar.frame, 0, animatonOffset);
+            _actionBar.alpha = alpha;
+        }
 
         // Captions
         for (MWZoomingScrollView *page in _visiblePages) {
@@ -1672,9 +1678,8 @@ static void * MWVideoPlayerObservation = &MWVideoPlayerObservation;
                 // Pass any index, all we're interested in is the Y
                 CGRect captionFrame = [self frameForCaptionView:v atIndex:0];
                 captionFrame.origin.x = v.frame.origin.x; // Reset X
-                if (hidden) captionFrame = CGRectOffset(captionFrame, 0, animatonOffset);
+                if (hidden) captionFrame = CGRectOffset(captionFrame, 0, (_toolbar.superview?_toolbar.frame.size.height:0) + (_actionBar?_actionBar.frame.size.height:0));
                 v.frame = captionFrame;
-                v.alpha = alpha;
             }
         }
         
