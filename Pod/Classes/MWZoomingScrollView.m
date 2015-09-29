@@ -375,7 +375,11 @@
 #pragma mark - Tap Detection
 
 - (void)handleSingleTap:(CGPoint)touchPoint {
-	[_photoBrowser performSelector:@selector(toggleControls) withObject:nil afterDelay:0.2];
+    if (_photoBrowser.mode == MWPhotoBrowserModeNormal) {
+        [_photoBrowser performSelector:@selector(toggleControls) withObject:nil afterDelay:0.2];
+    } else if (_photoBrowser.mode == MWPhotoBrowserModePurePhoto) {
+        [_photoBrowser performSelector:@selector(dismissUserInterface) withObject:nil afterDelay:0.2];
+    }
 }
 
 - (void)handleDoubleTap:(CGPoint)touchPoint {

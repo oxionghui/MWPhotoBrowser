@@ -18,6 +18,12 @@
 #define MWLog(x, ...)
 #endif
 
+typedef NS_ENUM(NSUInteger, MWPhotoBrowserMode) {
+    MWPhotoBrowserModeNormal,
+    MWPhotoBrowserModePurePhoto,
+    MWPhotoBrowserModeSelectPhoto
+};
+
 @class MWPhotoBrowser;
 
 @protocol MWPhotoBrowserDelegate <NSObject>
@@ -67,6 +73,7 @@
 @property (nonatomic) BOOL autoPlayOnAppear;
 @property (nonatomic) NSUInteger delayToHideElements;
 @property (nonatomic, readonly) NSUInteger currentIndex;
+@property (nonatomic) MWPhotoBrowserMode mode;
 
 // Customise image selection icons as they are the only icons with a colour tint
 // Icon should be located in the app's main bundle

@@ -14,6 +14,7 @@
 #import "UIImage+MWPhotoBrowser.h"
 #import <pop/POP.h>
 #import "MWInbilinCaptionView.h"
+#import "MWInbilinNavigationBar.h"
 
 #define PADDING                  10
 
@@ -84,6 +85,7 @@ static void * MWVideoPlayerObservation = &MWVideoPlayerObservation;
     _didSavePreviousStateOfNavBar = NO;
     _applicationWindow = [[[UIApplication sharedApplication] delegate] window];
     _animationDuration = 0.28;
+    _mode = MWPhotoBrowserModeNormal;
     self.automaticallyAdjustsScrollViewInsets = NO;
     
     // Listen for MWPhoto notifications
@@ -162,32 +164,36 @@ static void * MWVideoPlayerObservation = &MWVideoPlayerObservation;
     _pagingScrollView.contentSize = [self contentSizeForPagingScrollView];
 	[self.view addSubview:_pagingScrollView];
 	
-    // Toolbar
-    _toolbar = [[UIToolbar alloc] initWithFrame:[self frameForToolbarAtOrientation:self.interfaceOrientation]];
-    _toolbar.tintColor = [UIColor whiteColor];
-    _toolbar.barTintColor = nil;
-    [_toolbar setBackgroundImage:nil forToolbarPosition:UIToolbarPositionAny barMetrics:UIBarMetricsDefault];
-    [_toolbar setBackgroundImage:nil forToolbarPosition:UIToolbarPositionAny barMetrics:UIBarMetricsLandscapePhone];
-    _toolbar.barStyle = UIBarStyleBlackTranslucent;
-    _toolbar.autoresizingMask = UIViewAutoresizingFlexibleTopMargin | UIViewAutoresizingFlexibleWidth;
-    
-    if ([self.delegate respondsToSelector:@selector(shouldShowActionBarInPhotoBrowser:)] &&
-        [self.delegate shouldShowActionBarInPhotoBrowser:self]) {
-        _actionBar = [[MWInbilinActionBar alloc] initWithFrame:[self frameForToolbarAtOrientation:self.interfaceOrientation] photoBrowser:self];
-        _actionBar.autoresizingMask = UIViewAutoresizingFlexibleTopMargin | UIViewAutoresizingFlexibleWidth;
-    }
-    
-    // Toolbar Items
-    if (self.displayNavArrows) {
-        NSString *arrowPathFormat = @"MWPhotoBrowser.bundle/UIBarButtonItemArrow%@";
-        UIImage *previousButtonImage = [UIImage imageForResourcePath:[NSString stringWithFormat:arrowPathFormat, @"Left"] ofType:@"png" inBundle:[NSBundle bundleForClass:[self class]]];
-        UIImage *nextButtonImage = [UIImage imageForResourcePath:[NSString stringWithFormat:arrowPathFormat, @"Right"] ofType:@"png" inBundle:[NSBundle bundleForClass:[self class]]];
-        _previousButton = [[UIBarButtonItem alloc] initWithImage:previousButtonImage style:UIBarButtonItemStylePlain target:self action:@selector(gotoPreviousPage)];
-        _nextButton = [[UIBarButtonItem alloc] initWithImage:nextButtonImage style:UIBarButtonItemStylePlain target:self action:@selector(gotoNextPage)];
-    }
-    if (self.displayActionButton) {
-        UIImage *moreActionIcon = [UIImage imageForResourcePath:@"MWPhotoBrowser.bundle/UIBarButtonItemMoreActions@2x" ofType:@"png" inBundle:[NSBundle bundleForClass:[self class]]];
-        _actionButton = [[UIBarButtonItem alloc] initWithImage:moreActionIcon style:UIBarButtonItemStylePlain target:self action:@selector(actionButtonPressed:)];
+    if (self.mode == MWPhotoBrowserModeNormal) {
+        // Toolbar
+        _toolbar = [[UIToolbar alloc] initWithFrame:[self frameForToolbarAtOrientation:self.interfaceOrientation]];
+        _toolbar.tintColor = [UIColor whiteColor];
+        _toolbar.barTintColor = nil;
+        [_toolbar setBackgroundImage:nil forToolbarPosition:UIToolbarPositionAny barMetrics:UIBarMetricsDefault];
+        [_toolbar setBackgroundImage:nil forToolbarPosition:UIToolbarPositionAny barMetrics:UIBarMetricsLandscapePhone];
+        _toolbar.barStyle = UIBarStyleBlackTranslucent;
+        _toolbar.autoresizingMask = UIViewAutoresizingFlexibleTopMargin | UIViewAutoresizingFlexibleWidth;
+        
+        if ([self.delegate respondsToSelector:@selector(shouldShowActionBarInPhotoBrowser:)] &&
+            [self.delegate shouldShowActionBarInPhotoBrowser:self]) {
+            _actionBar = [[MWInbilinActionBar alloc] initWithFrame:[self frameForToolbarAtOrientation:self.interfaceOrientation] photoBrowser:self];
+            _actionBar.autoresizingMask = UIViewAutoresizingFlexibleTopMargin | UIViewAutoresizingFlexibleWidth;
+        }
+        
+        // Toolbar Items
+        if (self.displayNavArrows) {
+            NSString *arrowPathFormat = @"MWPhotoBrowser.bundle/UIBarButtonItemArrow%@";
+            UIImage *previousButtonImage = [UIImage imageForResourcePath:[NSString stringWithFormat:arrowPathFormat, @"Left"] ofType:@"png" inBundle:[NSBundle bundleForClass:[self class]]];
+            UIImage *nextButtonImage = [UIImage imageForResourcePath:[NSString stringWithFormat:arrowPathFormat, @"Right"] ofType:@"png" inBundle:[NSBundle bundleForClass:[self class]]];
+            _previousButton = [[UIBarButtonItem alloc] initWithImage:previousButtonImage style:UIBarButtonItemStylePlain target:self action:@selector(gotoPreviousPage)];
+            _nextButton = [[UIBarButtonItem alloc] initWithImage:nextButtonImage style:UIBarButtonItemStylePlain target:self action:@selector(gotoNextPage)];
+        }
+        if (self.displayActionButton) {
+            UIImage *moreActionIcon = [UIImage imageForResourcePath:@"MWPhotoBrowser.bundle/UIBarButtonItemMoreActions@2x" ofType:@"png" inBundle:[NSBundle bundleForClass:[self class]]];
+            _actionButton = [[UIBarButtonItem alloc] initWithImage:moreActionIcon style:UIBarButtonItemStylePlain target:self action:@selector(actionButtonPressed:)];
+        }
+    } else if (self.mode == MWPhotoBrowserModePurePhoto) {
+        _inbilinNavigationBar = [[MWInbilinNavigationBar alloc] initWithFrame:[self frameForInbilinNavigationBar]];
     }
     
     // Update
@@ -211,7 +217,6 @@ static void * MWVideoPlayerObservation = &MWVideoPlayerObservation;
 }
 
 - (void)performLayout {
-    
     // Setup
     _performingLayout = YES;
     NSUInteger numberOfPhotos = [self numberOfPhotos];
@@ -220,99 +225,104 @@ static void * MWVideoPlayerObservation = &MWVideoPlayerObservation;
     [_visiblePages removeAllObjects];
     [_recycledPages removeAllObjects];
     
-    // Navigation buttons
-    if ([self.navigationController.viewControllers objectAtIndex:0] == self) {
-        // We're first on stack so show done button
-//        _doneButton = [[UIBarButtonItem alloc] initWithTitle:NSLocalizedString(@"Done", nil) style:UIBarButtonItemStylePlain target:self action:@selector(doneButtonPressed:)];
-        UIImage *arrowLeft = [UIImage imageForResourcePath:@"MWPhotoBrowser.bundle/UINavigationBarInbilinArrowLeft@2x" ofType:@"png" inBundle:[NSBundle bundleForClass:[self class]]];
-        _doneButton = [[UIBarButtonItem alloc] initWithImage:arrowLeft style:UIBarButtonItemStylePlain target:self action:@selector(doneButtonPressed:)];
-        // Set appearance
-        [_doneButton setBackgroundImage:nil forState:UIControlStateNormal barMetrics:UIBarMetricsDefault];
-        [_doneButton setBackgroundImage:nil forState:UIControlStateNormal barMetrics:UIBarMetricsLandscapePhone];
-        [_doneButton setBackgroundImage:nil forState:UIControlStateHighlighted barMetrics:UIBarMetricsDefault];
-        [_doneButton setBackgroundImage:nil forState:UIControlStateHighlighted barMetrics:UIBarMetricsLandscapePhone];
-        [_doneButton setTitleTextAttributes:[NSDictionary dictionary] forState:UIControlStateNormal];
-        [_doneButton setTitleTextAttributes:[NSDictionary dictionary] forState:UIControlStateHighlighted];
-        self.navigationItem.leftBarButtonItem = _doneButton;
-    } else {
-        // We're not first so show back button
-        UIViewController *previousViewController = [self.navigationController.viewControllers objectAtIndex:self.navigationController.viewControllers.count-2];
-        NSString *backButtonTitle = previousViewController.navigationItem.backBarButtonItem ? previousViewController.navigationItem.backBarButtonItem.title : previousViewController.title;
-        UIBarButtonItem *newBackButton = [[UIBarButtonItem alloc] initWithTitle:backButtonTitle style:UIBarButtonItemStylePlain target:nil action:nil];
-        // Appearance
-        [newBackButton setBackButtonBackgroundImage:nil forState:UIControlStateNormal barMetrics:UIBarMetricsDefault];
-        [newBackButton setBackButtonBackgroundImage:nil forState:UIControlStateNormal barMetrics:UIBarMetricsLandscapePhone];
-        [newBackButton setBackButtonBackgroundImage:nil forState:UIControlStateHighlighted barMetrics:UIBarMetricsDefault];
-        [newBackButton setBackButtonBackgroundImage:nil forState:UIControlStateHighlighted barMetrics:UIBarMetricsLandscapePhone];
-        [newBackButton setTitleTextAttributes:[NSDictionary dictionary] forState:UIControlStateNormal];
-        [newBackButton setTitleTextAttributes:[NSDictionary dictionary] forState:UIControlStateHighlighted];
-        _previousViewControllerBackButton = previousViewController.navigationItem.backBarButtonItem; // remember previous
-        previousViewController.navigationItem.backBarButtonItem = newBackButton;
-    }
-    
-    if ([self.delegate respondsToSelector:@selector(titleViewClassInPhotoBrowser:)]) {
-        Class titleViewClass = [self.delegate titleViewClassInPhotoBrowser:self];
-        if (titleViewClass) {
-            UIView<MWTitleView> *titleView = [[titleViewClass alloc] init];
-            self.navigationItem.titleView = titleView;
-            _titleView = titleView;
+    if (self.mode == MWPhotoBrowserModeNormal) {
+        // Navigation buttons
+        if ([self.navigationController.viewControllers objectAtIndex:0] == self) {
+            // We're first on stack so show done button
+            //        _doneButton = [[UIBarButtonItem alloc] initWithTitle:NSLocalizedString(@"Done", nil) style:UIBarButtonItemStylePlain target:self action:@selector(doneButtonPressed:)];
+            UIImage *arrowLeft = [UIImage imageForResourcePath:@"MWPhotoBrowser.bundle/UINavigationBarInbilinArrowLeft@2x" ofType:@"png" inBundle:[NSBundle bundleForClass:[self class]]];
+            _doneButton = [[UIBarButtonItem alloc] initWithImage:arrowLeft style:UIBarButtonItemStylePlain target:self action:@selector(doneButtonPressed:)];
+            // Set appearance
+            [_doneButton setBackgroundImage:nil forState:UIControlStateNormal barMetrics:UIBarMetricsDefault];
+            [_doneButton setBackgroundImage:nil forState:UIControlStateNormal barMetrics:UIBarMetricsLandscapePhone];
+            [_doneButton setBackgroundImage:nil forState:UIControlStateHighlighted barMetrics:UIBarMetricsDefault];
+            [_doneButton setBackgroundImage:nil forState:UIControlStateHighlighted barMetrics:UIBarMetricsLandscapePhone];
+            [_doneButton setTitleTextAttributes:[NSDictionary dictionary] forState:UIControlStateNormal];
+            [_doneButton setTitleTextAttributes:[NSDictionary dictionary] forState:UIControlStateHighlighted];
+            self.navigationItem.leftBarButtonItem = _doneButton;
+        } else {
+            // We're not first so show back button
+            UIViewController *previousViewController = [self.navigationController.viewControllers objectAtIndex:self.navigationController.viewControllers.count-2];
+            NSString *backButtonTitle = previousViewController.navigationItem.backBarButtonItem ? previousViewController.navigationItem.backBarButtonItem.title : previousViewController.title;
+            UIBarButtonItem *newBackButton = [[UIBarButtonItem alloc] initWithTitle:backButtonTitle style:UIBarButtonItemStylePlain target:nil action:nil];
+            // Appearance
+            [newBackButton setBackButtonBackgroundImage:nil forState:UIControlStateNormal barMetrics:UIBarMetricsDefault];
+            [newBackButton setBackButtonBackgroundImage:nil forState:UIControlStateNormal barMetrics:UIBarMetricsLandscapePhone];
+            [newBackButton setBackButtonBackgroundImage:nil forState:UIControlStateHighlighted barMetrics:UIBarMetricsDefault];
+            [newBackButton setBackButtonBackgroundImage:nil forState:UIControlStateHighlighted barMetrics:UIBarMetricsLandscapePhone];
+            [newBackButton setTitleTextAttributes:[NSDictionary dictionary] forState:UIControlStateNormal];
+            [newBackButton setTitleTextAttributes:[NSDictionary dictionary] forState:UIControlStateHighlighted];
+            _previousViewControllerBackButton = previousViewController.navigationItem.backBarButtonItem; // remember previous
+            previousViewController.navigationItem.backBarButtonItem = newBackButton;
         }
-    }
-
-    // Toolbar items
-    BOOL hasItems = NO;
-    UIBarButtonItem *fixedSpace = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemFixedSpace target:self action:nil];
-    fixedSpace.width = 32; // To balance action button
-    UIBarButtonItem *flexSpace = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemFlexibleSpace target:self action:nil];
-    NSMutableArray *items = [[NSMutableArray alloc] init];
-
-    // Left button - Grid
-    if (_enableGrid) {
-        hasItems = YES;
-        [items addObject:[[UIBarButtonItem alloc] initWithImage:[UIImage imageForResourcePath:@"MWPhotoBrowser.bundle/UIBarButtonItemGrid" ofType:@"png" inBundle:[NSBundle bundleForClass:[self class]]] style:UIBarButtonItemStylePlain target:self action:@selector(showGridAnimated)]];
-    } else {
-        [items addObject:fixedSpace];
-    }
-
-    // Middle - Nav
-    if (_previousButton && _nextButton && numberOfPhotos > 1) {
-        hasItems = YES;
-        [items addObject:flexSpace];
-        [items addObject:_previousButton];
-        [items addObject:flexSpace];
-        [items addObject:_nextButton];
-        [items addObject:flexSpace];
-    } else {
-        [items addObject:flexSpace];
-    }
-
-    // Right - Action
-    if (_actionButton && !(!hasItems && !self.navigationItem.rightBarButtonItem)) {
-        [items addObject:_actionButton];
-    } else {
-        // We're not showing the toolbar so try and show in top right
-        if (_actionButton)
-            self.navigationItem.rightBarButtonItem = _actionButton;
-        [items addObject:fixedSpace];
-    }
-
-    // Toolbar visibility
-    [_toolbar setItems:items];
-    BOOL hideToolbar = YES;
-    for (UIBarButtonItem* item in _toolbar.items) {
-        if (item != fixedSpace && item != flexSpace) {
-            hideToolbar = NO;
-            break;
+        
+        if ([self.delegate respondsToSelector:@selector(titleViewClassInPhotoBrowser:)]) {
+            Class titleViewClass = [self.delegate titleViewClassInPhotoBrowser:self];
+            if (titleViewClass) {
+                UIView<MWTitleView> *titleView = [[titleViewClass alloc] init];
+                self.navigationItem.titleView = titleView;
+                _titleView = titleView;
+            }
         }
-    }
-    if (hideToolbar) {
-        [_toolbar removeFromSuperview];
-    } else {
-        [self.view addSubview:_toolbar];
-    }
-    
-    if (_actionBar) {
-        [self.view addSubview:_actionBar];
+        
+        // Toolbar items
+        BOOL hasItems = NO;
+        UIBarButtonItem *fixedSpace = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemFixedSpace target:self action:nil];
+        fixedSpace.width = 32; // To balance action button
+        UIBarButtonItem *flexSpace = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemFlexibleSpace target:self action:nil];
+        NSMutableArray *items = [[NSMutableArray alloc] init];
+        
+        // Left button - Grid
+        if (_enableGrid) {
+            hasItems = YES;
+            [items addObject:[[UIBarButtonItem alloc] initWithImage:[UIImage imageForResourcePath:@"MWPhotoBrowser.bundle/UIBarButtonItemGrid" ofType:@"png" inBundle:[NSBundle bundleForClass:[self class]]] style:UIBarButtonItemStylePlain target:self action:@selector(showGridAnimated)]];
+        } else {
+            [items addObject:fixedSpace];
+        }
+        
+        // Middle - Nav
+        if (_previousButton && _nextButton && numberOfPhotos > 1) {
+            hasItems = YES;
+            [items addObject:flexSpace];
+            [items addObject:_previousButton];
+            [items addObject:flexSpace];
+            [items addObject:_nextButton];
+            [items addObject:flexSpace];
+        } else {
+            [items addObject:flexSpace];
+        }
+        
+        // Right - Action
+        if (_actionButton && !(!hasItems && !self.navigationItem.rightBarButtonItem)) {
+            [items addObject:_actionButton];
+        } else {
+            // We're not showing the toolbar so try and show in top right
+            if (_actionButton)
+                self.navigationItem.rightBarButtonItem = _actionButton;
+            [items addObject:fixedSpace];
+        }
+        
+        // Toolbar visibility
+        [_toolbar setItems:items];
+        BOOL hideToolbar = YES;
+        for (UIBarButtonItem* item in _toolbar.items) {
+            if (item != fixedSpace && item != flexSpace) {
+                hideToolbar = NO;
+                break;
+            }
+        }
+        if (hideToolbar) {
+            [_toolbar removeFromSuperview];
+        } else {
+            [self.view addSubview:_toolbar];
+        }
+        
+        if (_actionBar) {
+            [self.view addSubview:_actionBar];
+        }
+    } else if (self.mode == MWPhotoBrowserModePurePhoto) {
+        [self.view addSubview:_inbilinNavigationBar];
+    } else if (self.mode == MWPhotoBrowserModeSelectPhoto) {
     }
     
     // Update nav
@@ -384,6 +394,10 @@ static void * MWVideoPlayerObservation = &MWVideoPlayerObservation;
     }
     [self setNavBarAppearance:animated];
     
+    if (!_viewIsActive) {
+        _previousStatusBarHidden = [[UIApplication sharedApplication] isStatusBarHidden];
+    }
+    
     // Initial appearance
     if (!_viewHasAppearedInitially) {
         if (_startOnGrid) {
@@ -397,6 +411,21 @@ static void * MWVideoPlayerObservation = &MWVideoPlayerObservation;
         [self jumpToPageAtIndex:_pageIndexBeforeRotation animated:NO];
     }
 
+    if (self.mode == MWPhotoBrowserModePurePhoto ||
+        self.mode == MWPhotoBrowserModeSelectPhoto) {
+        if (!_isVCBasedStatusBarAppearance) {
+            
+            // Non-view controller based
+            [[UIApplication sharedApplication] setStatusBarHidden:YES withAnimation:UIStatusBarAnimationNone];
+            
+        } else {
+            
+            // View controller based so animate away
+            _statusBarShouldBeHidden = YES;
+            [self setNeedsStatusBarAppearanceUpdate];
+        }
+        self.navigationController.navigationBarHidden = YES;
+    }
 }
 
 - (void)viewDidAppear:(BOOL)animated {
@@ -1221,6 +1250,10 @@ static void * MWVideoPlayerObservation = &MWVideoPlayerObservation;
 	return CGPointMake(newOffset, 0);
 }
 
+- (CGRect)frameForInbilinNavigationBar {
+    return CGRectMake(0, 0, self.view.bounds.size.width, 64);
+}
+
 - (CGRect)frameForToolbarAtOrientation:(UIInterfaceOrientation)orientation {
     CGFloat height = 44;
     if (UI_USER_INTERFACE_IDIOM() == UIUserInterfaceIdiomPhone &&
@@ -1297,52 +1330,57 @@ static void * MWVideoPlayerObservation = &MWVideoPlayerObservation;
 
 - (void)updateNavigation {
     
-	// Title
-    NSUInteger numberOfPhotos = [self numberOfPhotos];
-    if (_gridController) {
-        if (_gridController.selectionMode) {
-            self.title = NSLocalizedString(@"Select Photos", nil);
-        } else {
-            NSString *photosText;
-            if (numberOfPhotos == 1) {
-                photosText = NSLocalizedString(@"photo", @"Used in the context: '1 photo'");
+    if (self.mode == MWPhotoBrowserModeNormal) {
+        // Title
+        NSUInteger numberOfPhotos = [self numberOfPhotos];
+        if (_gridController) {
+            if (_gridController.selectionMode) {
+                self.title = NSLocalizedString(@"Select Photos", nil);
             } else {
-                photosText = NSLocalizedString(@"photos", @"Used in the context: '3 photos'");
+                NSString *photosText;
+                if (numberOfPhotos == 1) {
+                    photosText = NSLocalizedString(@"photo", @"Used in the context: '1 photo'");
+                } else {
+                    photosText = NSLocalizedString(@"photos", @"Used in the context: '3 photos'");
+                }
+                self.title = [NSString stringWithFormat:@"%lu %@", (unsigned long)numberOfPhotos, photosText];
             }
-            self.title = [NSString stringWithFormat:@"%lu %@", (unsigned long)numberOfPhotos, photosText];
-        }
-    } else if (numberOfPhotos > 1) {
-        if (_titleView) {
-            _titleView.title = [self publishDateStringAtIndex:_currentPageIndex];
-            _titleView.subtitle = [NSString stringWithFormat:@"%lu/%lu", (unsigned long)(_currentPageIndex+1), (unsigned long)numberOfPhotos];
-            [_titleView sizeToFit];
-        } else {
-            if ([_delegate respondsToSelector:@selector(photoBrowser:titleForPhotoAtIndex:)]) {
-                self.title = [_delegate photoBrowser:self titleForPhotoAtIndex:_currentPageIndex];
+        } else if (numberOfPhotos > 1) {
+            if (_titleView) {
+                _titleView.title = [self publishDateStringAtIndex:_currentPageIndex];
+                _titleView.subtitle = [NSString stringWithFormat:@"%lu/%lu", (unsigned long)(_currentPageIndex+1), (unsigned long)numberOfPhotos];
+                [_titleView sizeToFit];
             } else {
-                self.title = [NSString stringWithFormat:@"%lu %@ %lu", (unsigned long)(_currentPageIndex+1), NSLocalizedString(@"of", @"Used in the context: 'Showing 1 of 3 items'"), (unsigned long)numberOfPhotos];
+                if ([_delegate respondsToSelector:@selector(photoBrowser:titleForPhotoAtIndex:)]) {
+                    self.title = [_delegate photoBrowser:self titleForPhotoAtIndex:_currentPageIndex];
+                } else {
+                    self.title = [NSString stringWithFormat:@"%lu %@ %lu", (unsigned long)(_currentPageIndex+1), NSLocalizedString(@"of", @"Used in the context: 'Showing 1 of 3 items'"), (unsigned long)numberOfPhotos];
+                }
             }
+        } else {
+            self.title = nil;
         }
-	} else {
-		self.title = nil;
-	}
-	
-	// Buttons
-	_previousButton.enabled = (_currentPageIndex > 0);
-	_nextButton.enabled = (_currentPageIndex < numberOfPhotos - 1);
-    
-    // Disable action button if there is no image or it's a video
-    MWPhoto *photo = [self photoAtIndex:_currentPageIndex];
-    if ([photo underlyingImage] == nil || ([photo respondsToSelector:@selector(isVideo)] && photo.isVideo)) {
-        _actionButton.enabled = NO;
-        _actionButton.tintColor = [UIColor clearColor]; // Tint to hide button
-    } else {
-        _actionButton.enabled = YES;
-        _actionButton.tintColor = nil;
-    }
-    
-    if (_actionBar) {
-        [_actionBar updateData:_currentPageIndex];
+        
+        // Buttons
+        _previousButton.enabled = (_currentPageIndex > 0);
+        _nextButton.enabled = (_currentPageIndex < numberOfPhotos - 1);
+        
+        // Disable action button if there is no image or it's a video
+        MWPhoto *photo = [self photoAtIndex:_currentPageIndex];
+        if ([photo underlyingImage] == nil || ([photo respondsToSelector:@selector(isVideo)] && photo.isVideo)) {
+            _actionButton.enabled = NO;
+            _actionButton.tintColor = [UIColor clearColor]; // Tint to hide button
+        } else {
+            _actionButton.enabled = YES;
+            _actionButton.tintColor = nil;
+        }
+        
+        if (_actionBar) {
+            [_actionBar updateData:_currentPageIndex];
+        }
+    } else if (self.mode == MWPhotoBrowserModePurePhoto) {
+        NSUInteger numberOfPhotos = [self numberOfPhotos];
+        _inbilinNavigationBar.title = [NSString stringWithFormat:@"%lu/%lu", (unsigned long)(_currentPageIndex+1), (unsigned long)numberOfPhotos];
     }
 }
 
@@ -1773,17 +1811,21 @@ static void * MWVideoPlayerObservation = &MWVideoPlayerObservation;
                 return;
             }
         }
-        if ([self scaleAnimationImageViewAtIndex:self.currentIndex]) {
-            MWZoomingScrollView *scrollView = [self pageDisplayedAtIndex:_currentPageIndex];
-            [self performCloseAnimationWithScrollView:scrollView];
-        } else {
-            // Dismiss view controller
-            if ([_delegate respondsToSelector:@selector(photoBrowserDidFinishModalPresentation:)]) {
-                // Call delegate method and let them dismiss us
-                [_delegate photoBrowserDidFinishModalPresentation:self];
-            } else  {
-                [self dismissViewControllerAnimated:YES completion:nil];
-            }
+        [self dismissUserInterface];
+    }
+}
+
+- (void)dismissUserInterface {
+    if ([self scaleAnimationImageViewAtIndex:self.currentIndex]) {
+        MWZoomingScrollView *scrollView = [self pageDisplayedAtIndex:_currentPageIndex];
+        [self performCloseAnimationWithScrollView:scrollView];
+    } else {
+        // Dismiss view controller
+        if ([_delegate respondsToSelector:@selector(photoBrowserDidFinishModalPresentation:)]) {
+            // Call delegate method and let them dismiss us
+            [_delegate photoBrowserDidFinishModalPresentation:self];
+        } else  {
+            [self dismissViewControllerAnimated:YES completion:nil];
         }
     }
 }

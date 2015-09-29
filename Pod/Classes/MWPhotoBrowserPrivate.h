@@ -13,6 +13,7 @@
 #import "MWZoomingScrollView.h"
 #import "MWTitleViewProtocol.h"
 #import "MWInbilinActionBar.h"
+#import "MWInbilinNavigationBar.h"
 
 // Declare private methods of browser
 @interface MWPhotoBrowser () {
@@ -34,6 +35,7 @@
 	NSUInteger _pageIndexBeforeRotation;
 	
 	// Navigation & controls
+    MWInbilinNavigationBar *_inbilinNavigationBar;
     MWInbilinActionBar *_actionBar;
 	UIToolbar *_toolbar;
 	NSTimer *_controlVisibilityTimer;
@@ -55,6 +57,7 @@
     UIBarButtonItem *_previousViewControllerBackButton;
     UIImage *_previousNavigationBarBackgroundImageDefault;
     UIImage *_previousNavigationBarBackgroundImageLandscapePhone;
+    BOOL _previousStatusBarHidden;
     
     // Video
     MPMoviePlayerViewController *_currentVideoPlayerViewController;
@@ -137,6 +140,9 @@
 - (void)setPhotoSelected:(BOOL)selected atIndex:(NSUInteger)index;
 - (void)loadAdjacentPhotosIfNecessary:(id<MWPhoto>)photo;
 - (void)releaseAllUnderlyingPhotos:(BOOL)preserveCurrent;
+
+// Dismiss
+- (void)dismissUserInterface;
 
 @end
 
