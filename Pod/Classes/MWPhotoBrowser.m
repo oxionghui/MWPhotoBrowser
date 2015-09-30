@@ -243,6 +243,9 @@ static void * MWVideoPlayerObservation = &MWVideoPlayerObservation;
             [_doneButton setTitleTextAttributes:[NSDictionary dictionary] forState:UIControlStateNormal];
             [_doneButton setTitleTextAttributes:[NSDictionary dictionary] forState:UIControlStateHighlighted];
             self.navigationItem.leftBarButtonItem = _doneButton;
+            
+            UIImage *moreActionIcon = [UIImage imageForResourcePath:@"MWPhotoBrowser.bundle/UIBarButtonItemMoreActions@2x" ofType:@"png" inBundle:[NSBundle bundleForClass:[self class]]];
+            self.navigationItem.rightBarButtonItem = [[UIBarButtonItem alloc] initWithImage:moreActionIcon style:UIBarButtonItemStylePlain target:self action:@selector(actionButtonPressed:)];
         } else {
             // We're not first so show back button
             UIViewController *previousViewController = [self.navigationController.viewControllers objectAtIndex:self.navigationController.viewControllers.count-2];
@@ -314,7 +317,7 @@ static void * MWVideoPlayerObservation = &MWVideoPlayerObservation;
                 break;
             }
         }
-        if (hideToolbar) {
+        if (hideToolbar || _actionBar) {
             [_toolbar removeFromSuperview];
         } else {
             [self.view addSubview:_toolbar];
