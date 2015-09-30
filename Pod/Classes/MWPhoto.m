@@ -123,6 +123,24 @@
     return _underlyingImage;
 }
 
+- (BOOL)underlyingImageExistsLocally {
+    BOOL exists = NO;
+    if (self.underlyingImage) {
+        exists = YES;
+    } else if (_photoURL) {
+        // Check what type of url it is
+        if ([[[_photoURL scheme] lowercaseString] isEqualToString:@"assets-library"]) {
+            exists = YES;
+        } else if ([_photoURL isFileReferenceURL]) {
+            exists = YES;
+        } else {
+            // Web image
+            exists = [[SDWebImageManager sharedManager] diskImageExistsForURL:_photoURL];
+        }
+    }
+    return exists;
+}
+
 - (void)loadUnderlyingImageAndNotify {
     NSAssert([[NSThread currentThread] isMainThread], @"This method must be called on the main thread.");
     if (_loadingInProgress) return;

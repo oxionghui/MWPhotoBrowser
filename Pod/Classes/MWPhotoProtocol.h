@@ -52,6 +52,8 @@
 // as long as the image can be re-loaded (from cache, file, or URL)
 - (void)unloadUnderlyingImage;
 
+- (BOOL)underlyingImageExistsLocally;
+
 @optional
 
 // If photo is empty, in which case, don't show loading error icons

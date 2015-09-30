@@ -206,9 +206,12 @@ static void * MWVideoPlayerObservation = &MWVideoPlayerObservation;
         [self.view addGestureRecognizer:swipeGesture];
     }
     
-    if ([self scaleAnimationImageViewAtIndex:self.currentIndex]) {
-        // Transition animation
-        [self performPresentAnimation];
+    if ([self scaleAnimationImageViewAtIndex:_currentPageIndex]) {
+        id <MWPhoto> photo = [self photoAtIndex:_currentPageIndex];
+        if ([photo underlyingImageExistsLocally]) {
+            // Transition animation
+            [self performPresentAnimation];
+        }
     }
 
 	// Super
@@ -640,20 +643,23 @@ static void * MWVideoPlayerObservation = &MWVideoPlayerObservation;
     self.view.alpha = 0.0f;
     _pagingScrollView.alpha = 0.0f;
     
-    UIImage *scaleImage = [self scaleImageAtIndex:self.currentIndex];
-    UIImageView *scaleAniamtionImageView = [self scaleAnimationImageViewAtIndex:self.currentIndex];
+    UIImage *scaleImage = [self scaleImageAtIndex:_currentPageIndex];
+    UIImageView *scaleAniamtionImageView = [self scaleAnimationImageViewAtIndex:_currentPageIndex];
     
     UIImage *imageFromView = scaleImage ? scaleImage : [self getImageFromView:scaleAniamtionImageView];
     imageFromView = [self rotateImageToCurrentOrientation:imageFromView];
     
-    CGRect scaleAnimationViewOriginalFrame = [scaleAniamtionImageView.superview convertRect:scaleAniamtionImageView.frame toView:nil];
+    CGRect scaleAnimationViewOriginalFrame = [self scaleAnimationImageViewOriginalFrameAtIndex:_currentPageIndex];
+    if (CGRectEqualToRect(scaleAnimationViewOriginalFrame, CGRectZero)) {
+        scaleAnimationViewOriginalFrame = [scaleAniamtionImageView.superview convertRect:scaleAniamtionImageView.frame toView:nil];
+    }
     
     CGRect screenBound = [[UIScreen mainScreen] bounds];
     CGFloat screenWidth = screenBound.size.width;
     CGFloat screenHeight = screenBound.size.height;
     
     UIView *fadeView = [[UIView alloc] initWithFrame:CGRectMake(0, 0, screenWidth, screenHeight)];
-    fadeView.backgroundColor = [UIColor clearColor];
+    fadeView.backgroundColor = [UIColor colorWithWhite:0 alpha:0];
     [_applicationWindow addSubview:fadeView];
     
     UIImageView *resizableImageView = [[UIImageView alloc] initWithImage:imageFromView];
@@ -674,7 +680,7 @@ static void * MWVideoPlayerObservation = &MWVideoPlayerObservation;
     };
     
     [UIView animateWithDuration:_animationDuration animations:^{
-        fadeView.backgroundColor = [UIColor blackColor];
+        fadeView.backgroundColor = [UIColor colorWithWhite:0 alpha:1];
     } completion:nil];
     
     float scaleFactor = (imageFromView ? imageFromView.size.width : screenWidth) / screenWidth;
@@ -722,10 +728,12 @@ static void * MWVideoPlayerObservation = &MWVideoPlayerObservation;
     [_applicationWindow addSubview:resizableImageView];
     self.view.hidden = YES;
     
-    UIImageView *scaleAniamtionImageView = [self scaleAnimationImageViewAtIndex:self.currentIndex];
+    UIImageView *scaleAniamtionImageView = [self scaleAnimationImageViewAtIndex:_currentPageIndex];
+    CGRect scaleAnimationViewOriginalFrame = [self scaleAnimationImageViewOriginalFrameAtIndex:_currentPageIndex];
+    if (CGRectEqualToRect(scaleAnimationViewOriginalFrame, CGRectZero)) {
+        scaleAnimationViewOriginalFrame = [scaleAniamtionImageView.superview convertRect:scaleAniamtionImageView.frame toView:nil];
+    }
     scaleAniamtionImageView.hidden = YES;
-    
-    CGRect scaleAnimationViewOriginalFrame = [scaleAniamtionImageView.superview convertRect:scaleAniamtionImageView.frame toView:nil];
     
     void (^completion)() = ^() {
         scaleAniamtionImageView.hidden = NO;
@@ -976,12 +984,28 @@ static void * MWVideoPlayerObservation = &MWVideoPlayerObservation;
     }
 }
 
+- (CGRect)scaleAnimationImageViewOriginalFrameAtIndex:(NSUInteger)index {
+    if ([self.delegate respondsToSelector:@selector(photoBrowser:scaleAnimationImageViewFrameAtIndex:)]) {
+        return [self.delegate photoBrowser:self scaleAnimationImageViewFrameAtIndex:index];
+    } else {
+        return CGRectZero;
+    }
+}
+
 - (NSString *)publishDateStringAtIndex:(NSUInteger)index {
     NSString *publishDateString = nil;
     if ([self.delegate respondsToSelector:@selector(photoBrowser:publishDateStringAtIndex:)]) {
         publishDateString = [self.delegate photoBrowser:self publishDateStringAtIndex:index];
     }
     return publishDateString;
+}
+
+- (NSString *)indexInfoAtIndex:(NSUInteger)index {
+    NSString *indexInfo = nil;
+    if ([self.delegate respondsToSelector:@selector(photoBrowser:indexInfoAtIndex:)]) {
+        indexInfo = [self.delegate photoBrowser:self indexInfoAtIndex:index];
+    }
+    return indexInfo;
 }
 
 #pragma mark - Utility
@@ -1347,8 +1371,12 @@ static void * MWVideoPlayerObservation = &MWVideoPlayerObservation;
             }
         } else if (numberOfPhotos > 1) {
             if (_titleView) {
+                NSString *indexInfo = [self indexInfoAtIndex:_currentPageIndex];
+                if (!indexInfo) {
+                    indexInfo = [NSString stringWithFormat:@"%lu/%lu", (unsigned long)(_currentPageIndex+1), (unsigned long)numberOfPhotos];
+                }
                 _titleView.title = [self publishDateStringAtIndex:_currentPageIndex];
-                _titleView.subtitle = [NSString stringWithFormat:@"%lu/%lu", (unsigned long)(_currentPageIndex+1), (unsigned long)numberOfPhotos];
+                _titleView.subtitle = indexInfo;
                 [_titleView sizeToFit];
             } else {
                 if ([_delegate respondsToSelector:@selector(photoBrowser:titleForPhotoAtIndex:)]) {
@@ -1816,7 +1844,7 @@ static void * MWVideoPlayerObservation = &MWVideoPlayerObservation;
 }
 
 - (void)dismissUserInterface {
-    if ([self scaleAnimationImageViewAtIndex:self.currentIndex]) {
+    if ([self scaleAnimationImageViewAtIndex:_currentPageIndex]) {
         MWZoomingScrollView *scrollView = [self pageDisplayedAtIndex:_currentPageIndex];
         [self performCloseAnimationWithScrollView:scrollView];
     } else {
