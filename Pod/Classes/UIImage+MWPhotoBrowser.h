@@ -12,5 +12,6 @@
 
 + (UIImage *)imageForResourcePath:(NSString *)path ofType:(NSString *)type inBundle:(NSBundle *)bundle;
 + (UIImage *)clearImageWithSize:(CGSize)size;
+- (UIImage *)mw_applyTintEffectWithColor:(UIColor *)tintColor;
 
 @end

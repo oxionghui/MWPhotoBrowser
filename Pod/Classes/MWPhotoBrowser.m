@@ -194,6 +194,12 @@ static void * MWVideoPlayerObservation = &MWVideoPlayerObservation;
         }
     } else if (self.mode == MWPhotoBrowserModePurePhoto) {
         _inbilinNavigationBar = [[MWInbilinNavigationBar alloc] initWithFrame:[self frameForInbilinNavigationBar]];
+    } else if (self.mode == MWPhotoBrowserModeSelectPhoto) {
+        _inbilinSelectionNavigationBar = [[MWInbilinSelectionNavigationBar alloc] initWithFrame:[self frameForInbilinSelectionNavigationBar]];
+        [_inbilinSelectionNavigationBar addBackButtonTarget:self selector:@selector(selectionModeBackButtonTapped)];
+        
+        _inbilinSelectionToolBar = [[MWInbilinSelectionToolBar alloc] initWithFrame:[self frameForToolbarAtOrientation:self.interfaceOrientation]];
+        [_inbilinSelectionToolBar setSelectionCount:0];
     }
     
     // Update
@@ -329,6 +335,8 @@ static void * MWVideoPlayerObservation = &MWVideoPlayerObservation;
     } else if (self.mode == MWPhotoBrowserModePurePhoto) {
         [self.view addSubview:_inbilinNavigationBar];
     } else if (self.mode == MWPhotoBrowserModeSelectPhoto) {
+        [self.view addSubview:_inbilinSelectionNavigationBar];
+        [self.view addSubview:_inbilinSelectionToolBar];
     }
     
     // Update nav
@@ -1281,6 +1289,10 @@ static void * MWVideoPlayerObservation = &MWVideoPlayerObservation;
     return CGRectMake(0, 0, self.view.bounds.size.width, 64);
 }
 
+- (CGRect)frameForInbilinSelectionNavigationBar {
+    return CGRectMake(0, 0, self.view.bounds.size.width, 64);
+}
+
 - (CGRect)frameForToolbarAtOrientation:(UIInterfaceOrientation)orientation {
     CGFloat height = 44;
     if (UI_USER_INTERFACE_IDIOM() == UIUserInterfaceIdiomPhone &&
@@ -1471,6 +1483,10 @@ static void * MWVideoPlayerObservation = &MWVideoPlayerObservation;
             [self playVideoAtIndex:index];
         }
     }
+}
+
+- (void)selectionModeBackButtonTapped {
+    [self dismissUserInterface];
 }
 
 #pragma mark - Video

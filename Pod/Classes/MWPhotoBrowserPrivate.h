@@ -14,6 +14,8 @@
 #import "MWTitleViewProtocol.h"
 #import "MWInbilinActionBar.h"
 #import "MWInbilinNavigationBar.h"
+#import "MWInbilinSelectionNavigationBar.h"
+#import "MWInbilinSelectionToolBar.h"
 
 // Declare private methods of browser
 @interface MWPhotoBrowser () {
@@ -37,6 +39,8 @@
 	// Navigation & controls
     MWInbilinNavigationBar *_inbilinNavigationBar;
     MWInbilinActionBar *_actionBar;
+    MWInbilinSelectionNavigationBar *_inbilinSelectionNavigationBar;
+    MWInbilinSelectionToolBar *_inbilinSelectionToolBar;
 	UIToolbar *_toolbar;
 	NSTimer *_controlVisibilityTimer;
 	UIBarButtonItem *_previousButton, *_nextButton, *_actionButton, *_doneButton;
