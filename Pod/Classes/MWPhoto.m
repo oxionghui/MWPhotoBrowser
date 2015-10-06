@@ -34,6 +34,9 @@
 
 @synthesize underlyingImage = _underlyingImage; // synth property from protocol
 
+@synthesize lowQualityImageURL = _lowQualityImageURL;
+@synthesize lowQualityImage = _lowQualityImage;
+
 #pragma mark - Class Methods
 
 + (MWPhoto *)photoWithImage:(UIImage *)image {
@@ -50,6 +53,11 @@
 
 + (MWPhoto *)videoWithURL:(NSURL *)url {
     return [[MWPhoto alloc] initWithVideoURL:url];
+}
+
++ (MWPhoto *)photoWithURL:(NSURL *)url lowQualityImageURL:(NSURL *)lowQualityImageURL
+{
+    return [[MWPhoto alloc] initWithURL:url lowQualityImageURL:lowQualityImageURL];
 }
 
 #pragma mark - Init
@@ -71,6 +79,14 @@
 - (id)initWithURL:(NSURL *)url {
     if ((self = [super init])) {
         self.photoURL = url;
+    }
+    return self;
+}
+
+- (id)initWithURL:(NSURL *)url lowQualityImageURL:(NSURL *)lowQualityImageURL {
+    if ((self = [super init])) {
+        _photoURL = [url copy];
+        _lowQualityImageURL = [lowQualityImageURL copy];
     }
     return self;
 }
@@ -120,6 +136,9 @@
 #pragma mark - MWPhoto Protocol Methods
 
 - (UIImage *)underlyingImage {
+    if (!_underlyingImage && _image) {
+        _underlyingImage = _image;
+    }
     return _underlyingImage;
 }
 
@@ -149,7 +168,27 @@
         if (self.underlyingImage) {
             [self imageLoadingComplete];
         } else {
-            [self performLoadUnderlyingImageAndNotify];
+            if (self.lowQualityImage) {
+                [[NSNotificationCenter defaultCenter] postNotificationName:MWPHOTO_LOW_QUALITY_IMAGE_LOADED_NOTIFICATION
+                                                                    object:self];
+                [self performLoadUnderlyingImageAndNotify];
+            } else {
+                if (self.lowQualityImageURL) {
+                    [self _downloadImageWithURL:self.lowQualityImageURL retry:0 completion:^(UIImage *image, BOOL success){
+                        if (success) {
+                            _lowQualityImage = image;
+                            [[NSNotificationCenter defaultCenter] postNotificationName:MWPHOTO_LOW_QUALITY_IMAGE_LOADED_NOTIFICATION
+                                                                                object:self];
+                            [self performLoadUnderlyingImageAndNotify];
+                        } else {
+                            _webImageOperation = nil;
+                            [self imageLoadingComplete];
+                        }
+                    }];
+                } else {
+                    [self performLoadUnderlyingImageAndNotify];
+                }
+            }
         }
     }
     @catch (NSException *exception) {
@@ -333,6 +372,39 @@
         [[PHImageManager defaultManager] cancelImageRequest:_assetRequestID];
         _assetRequestID = PHInvalidImageRequestID;
     }
+}
+
+#pragma mark - Helper
+
+- (void)_downloadImageWithURL:(NSURL *)imageURL retry:(NSInteger)retry completion:(void (^)(UIImage *image, BOOL success))completion
+{
+    NSAssert(retry < 5, @"Prevent stack overflowing");
+    __block NSInteger retryTime = retry;
+    @try {
+        SDWebImageManager *manager = [SDWebImageManager sharedManager];
+        _webImageOperation = [manager downloadImageWithURL:imageURL
+                                                   options:SDWebImageRetryFailed
+                                                  progress:nil
+                                                 completed:^(UIImage *image, NSError *error, SDImageCacheType cacheType, BOOL finished, NSURL *imageURL) {
+                                                     if (error && !image) {
+                                                         MWLog(@"SDWebImage failed to download image: %@", error);
+                                                         if (retryTime > 0) {
+                                                             retryTime--;
+                                                             [self _downloadImageWithURL:imageURL retry:retryTime completion:completion];
+                                                             return;
+                                                         }
+                                                     }
+                                                     if (completion) {
+                                                         completion(image, !error && image);
+                                                     }
+                                                 }];
+    } @catch (NSException *e) {
+        MWLog(@"Photo from web: %@", e);
+        if (completion) {
+            completion(nil, NO);
+        }
+    }
+    
 }
 
 @end

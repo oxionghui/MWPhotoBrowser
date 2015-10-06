@@ -14,7 +14,7 @@
 // If you want to handle photos, caching, decompression
 // yourself then you can simply ensure your custom data model
 // conforms to MWPhotoProtocol
-@interface MWPhoto : NSObject <MWPhoto>
+@interface MWPhoto : NSObject <MWProgressivePhoto>
 
 @property (nonatomic, strong) NSString *caption;
 @property (nonatomic, strong) NSURL *videoURL;
@@ -25,10 +25,12 @@
 + (MWPhoto *)photoWithURL:(NSURL *)url;
 + (MWPhoto *)photoWithAsset:(PHAsset *)asset targetSize:(CGSize)targetSize;
 + (MWPhoto *)videoWithURL:(NSURL *)url; // Initialise video with no poster image
++ (MWPhoto *)photoWithURL:(NSURL *)url lowQualityImageURL:(NSURL *)lowQualityImageURL;
 
 - (id)init;
 - (id)initWithImage:(UIImage *)image;
 - (id)initWithURL:(NSURL *)url;
+- (id)initWithURL:(NSURL *)url lowQualityImageURL:(NSURL *)lowQualityImageURL;
 - (id)initWithAsset:(PHAsset *)asset targetSize:(CGSize)targetSize;
 - (id)initWithVideoURL:(NSURL *)url;
 

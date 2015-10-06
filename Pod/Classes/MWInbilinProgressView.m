@@ -11,10 +11,14 @@
 
 @interface MWInbilinProgressView ()
 
+@property (nonatomic, strong) UIImageView *imageView;
+@property (nonatomic, strong) UIView *maskView;
+
 @property (nonatomic, strong) UIView *leftProgressView;
 @property (nonatomic, strong) UIView *topProgressView;
 @property (nonatomic, strong) UIView *rightProgressView;
 @property (nonatomic, strong) UIView *bottomProgressView;
+
 @property (nonatomic, strong) UILabel *progressLabel;
 
 @end
@@ -24,8 +28,17 @@
 - (instancetype)initWithFrame:(CGRect)frame {
     if (self = [super initWithFrame:frame]) {
         self.progress = 0.0;
+        self.clipsToBounds = YES;
         
-        self.backgroundColor = [[UIColor blackColor] colorWithAlphaComponent:0.5];
+        _imageView = [UIImageView new];
+        _imageView.clipsToBounds = YES;
+        _imageView.contentMode = UIViewContentModeScaleAspectFill;
+        _imageView.backgroundColor = [UIColor colorWithWhite:0 alpha:1];
+        [self addSubview:_imageView];
+        
+        _maskView = [UIView new];
+        _maskView.backgroundColor = [[UIColor blackColor] colorWithAlphaComponent:0.5];
+        [self addSubview:_maskView];
         
         _leftProgressView = [UIView new];
         _topProgressView = [UIView new];
@@ -51,6 +64,9 @@
 - (void)layoutSubviews {
     [super layoutSubviews];
     
+    _imageView.frame = self.bounds;
+    _maskView.frame = self.bounds;
+    
     CGFloat horizontalProgressLength = (self.bounds.size.width - 2) * _progress;
     CGFloat verticalProgressLength = (self.bounds.size.height - 2) * _progress;
     _leftProgressView.frame = CGRectMake(0, self.bounds.size.height - verticalProgressLength, 2, verticalProgressLength);
@@ -61,12 +77,28 @@
     _progressLabel.frame = self.bounds;
 }
 
+- (CGSize)sizeThatFits:(CGSize)size {
+    if (self.image) {
+        return self.image.size;
+    } else {
+        return CGSizeZero;
+    }
+}
+
 - (void)setProgress:(CGFloat)progress {
     _progress = progress;
     _progressLabel.text = [NSString stringWithFormat:@"%d%%", (int)(_progress * 100)];
     
     [self setNeedsLayout];
     [self layoutIfNeeded];
+}
+
+- (void)setImage:(UIImage *)image {
+    _imageView.image = image;
+}
+
+- (UIImage *)image {
+    return self.imageView.image;
 }
 
 @end

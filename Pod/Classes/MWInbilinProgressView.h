@@ -10,6 +10,7 @@
 
 @interface MWInbilinProgressView : UIView
 
+@property (nonatomic, strong) UIImage *image;
 @property (nonatomic, assign) CGFloat progress;
 
 @end

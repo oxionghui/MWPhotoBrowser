@@ -13,6 +13,7 @@
 #import "MWPhoto.h"
 #import "MWPhotoBrowserPrivate.h"
 #import "UIImage+MWPhotoBrowser.h"
+#import "MWInbilinProgressView.h"
 
 // Private methods and properties
 @interface MWZoomingScrollView () {
@@ -21,6 +22,7 @@
 	MWTapDetectingView *_tapView; // for background taps
 	MWTapDetectingImageView *_photoImageView;
 	DACircularProgressView *_loadingIndicator;
+    MWInbilinProgressView *_inbilinProgressView;
     UIImageView *_loadingError;
     
 }
@@ -59,9 +61,14 @@
         _loadingIndicator.userInteractionEnabled = NO;
         _loadingIndicator.thicknessRatio = 0.1;
         _loadingIndicator.roundedCorners = NO;
+        _loadingIndicator.hidden = YES;
 		_loadingIndicator.autoresizingMask = UIViewAutoresizingFlexibleLeftMargin | UIViewAutoresizingFlexibleTopMargin |
         UIViewAutoresizingFlexibleBottomMargin | UIViewAutoresizingFlexibleRightMargin;
 		[self addSubview:_loadingIndicator];
+        
+        _inbilinProgressView = [MWInbilinProgressView new];
+        _inbilinProgressView.hidden = YES;
+        [self addSubview:_inbilinProgressView];
 
         // Listen progress notifications
         [[NSNotificationCenter defaultCenter] addObserver:self
@@ -69,6 +76,10 @@
                                                      name:MWPHOTO_PROGRESS_NOTIFICATION
                                                    object:nil];
         
+        [[NSNotificationCenter defaultCenter] addObserver:self
+                                                 selector:@selector(setLowQualityImageFromNotification:)
+                                                     name:MWPHOTO_LOW_QUALITY_IMAGE_LOADED_NOTIFICATION
+                                                   object:nil];
 		// Setup
 		self.backgroundColor = [UIColor blackColor];
 		self.delegate = self;
@@ -203,20 +214,38 @@
         if (photoWithProgress == self.photo) {
             float progress = [[dict valueForKey:@"progress"] floatValue];
             _loadingIndicator.progress = MAX(MIN(1, progress), 0);
+            _inbilinProgressView.progress = MAX(MIN(1, progress), 0);
+        }
+    });
+}
+
+- (void)setLowQualityImageFromNotification:(NSNotification *)notification {
+    dispatch_async(dispatch_get_main_queue(), ^{
+        if (notification.object == self.photo) {
+            UIImage *lowQualityImage = [(id <MWProgressivePhoto>)self.photo lowQualityImage];
+            _inbilinProgressView.image = lowQualityImage;
+            [self setNeedsLayout];
+            [self layoutIfNeeded];
         }
     });
 }
 
 - (void)hideLoadingIndicator {
     _loadingIndicator.hidden = YES;
+    _inbilinProgressView.hidden = YES;
 }
 
 - (void)showLoadingIndicator {
     self.zoomScale = 0;
     self.minimumZoomScale = 0;
     self.maximumZoomScale = 0;
-    _loadingIndicator.progress = 0;
-    _loadingIndicator.hidden = NO;
+    if ([self.photo conformsToProtocol:@protocol(MWProgressivePhoto)] && [(id <MWProgressivePhoto>)self.photo lowQualityImageURL]) {
+        _inbilinProgressView.progress = 0;
+        _inbilinProgressView.hidden = NO;
+    } else {
+        _loadingIndicator.progress = 0;
+        _loadingIndicator.hidden = NO;
+    }
     [self hideImageFailure];
 }
 
@@ -306,7 +335,7 @@
 
 }
 
-#pragma mark - Layout
+#pragma mark -
 
 - (void)layoutSubviews {
 	
@@ -324,6 +353,14 @@
                                          floorf((self.bounds.size.height - _loadingError.frame.size.height) / 2),
                                          _loadingError.frame.size.width,
                                          _loadingError.frame.size.height);
+    if (!_inbilinProgressView.hidden) {
+        [_inbilinProgressView sizeToFit];
+        
+        _inbilinProgressView.frame = CGRectMake(floorf((self.bounds.size.width - _inbilinProgressView.frame.size.width) / 2.),
+                                             floorf((self.bounds.size.height - _inbilinProgressView.frame.size.height) / 2),
+                                             _inbilinProgressView.frame.size.width,
+                                             _inbilinProgressView.frame.size.height);
+    }
 
 	// Super
 	[super layoutSubviews];
