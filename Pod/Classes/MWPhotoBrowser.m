@@ -1877,6 +1877,14 @@ static void * MWVideoPlayerObservation = &MWVideoPlayerObservation;
     }
 }
 
+- (void)handleLongPress {
+    if (self.mode == MWPhotoBrowserModePurePhoto) {
+        if ([self.delegate respondsToSelector:@selector(photoBrowser:actionButtonPressedForPhotoAtIndex:)]) {
+            [self.delegate photoBrowser:self actionButtonPressedForPhotoAtIndex:_currentPageIndex];
+        }
+    }
+}
+
 #pragma mark - Actions
 
 - (void)actionButtonPressed:(id)sender {

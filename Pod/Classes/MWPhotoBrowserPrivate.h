@@ -148,5 +148,8 @@
 // Dismiss
 - (void)dismissUserInterface;
 
+// Long Press
+- (void)handleLongPress;
+
 @end
 
