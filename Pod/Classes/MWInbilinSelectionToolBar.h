@@ -11,5 +11,6 @@
 @interface MWInbilinSelectionToolBar : UIView
 
 - (void)setSelectionCount:(NSUInteger)selectionCount;
+- (void)addFinishButtonTarget:(id)target action:(SEL)action;
 
 @end

@@ -197,8 +197,10 @@ static void * MWVideoPlayerObservation = &MWVideoPlayerObservation;
     } else if (self.mode == MWPhotoBrowserModeSelectPhoto) {
         _inbilinSelectionNavigationBar = [[MWInbilinSelectionNavigationBar alloc] initWithFrame:[self frameForInbilinSelectionNavigationBar]];
         [_inbilinSelectionNavigationBar addBackButtonTarget:self selector:@selector(selectionModeBackButtonTapped)];
+        [_inbilinSelectionNavigationBar addSelectButtonTarget:self selector:@selector(inbilinSelectButtonTapped:)];
         
         _inbilinSelectionToolBar = [[MWInbilinSelectionToolBar alloc] initWithFrame:[self frameForToolbarAtOrientation:self.interfaceOrientation]];
+        [_inbilinSelectionToolBar addFinishButtonTarget:self action:@selector(selectionModeFinishButtonTapped)];
         [_inbilinSelectionToolBar setSelectionCount:0];
     }
     
@@ -1409,7 +1411,7 @@ static void * MWVideoPlayerObservation = &MWVideoPlayerObservation;
         _nextButton.enabled = (_currentPageIndex < numberOfPhotos - 1);
         
         // Disable action button if there is no image or it's a video
-        MWPhoto *photo = [self photoAtIndex:_currentPageIndex];
+        id <MWPhoto> photo = [self photoAtIndex:_currentPageIndex];
         if ([photo underlyingImage] == nil || ([photo respondsToSelector:@selector(isVideo)] && photo.isVideo)) {
             _actionButton.enabled = NO;
             _actionButton.tintColor = [UIColor clearColor]; // Tint to hide button
@@ -1424,6 +1426,15 @@ static void * MWVideoPlayerObservation = &MWVideoPlayerObservation;
     } else if (self.mode == MWPhotoBrowserModePurePhoto) {
         NSUInteger numberOfPhotos = [self numberOfPhotos];
         _inbilinNavigationBar.title = [NSString stringWithFormat:@"%lu/%lu", (unsigned long)(_currentPageIndex+1), (unsigned long)numberOfPhotos];
+    } else if (self.mode == MWPhotoBrowserModeSelectPhoto) {
+        if ([self.delegate respondsToSelector:@selector(photoBrowser:isPhotoSelectedAtIndex:)]) {
+            BOOL isSelected = [self.delegate photoBrowser:self isPhotoSelectedAtIndex:_currentPageIndex];
+            [_inbilinSelectionNavigationBar updateSelectButton:isSelected];
+        }
+        if ([self.delegate respondsToSelector:@selector(numberOfSelectedPhotosInPhotoBrowser:)]) {
+            NSUInteger numberOfSelected = [self.delegate numberOfSelectedPhotosInPhotoBrowser:self];
+            [_inbilinSelectionToolBar setSelectionCount:numberOfSelected];
+        }
     }
 }
 
@@ -1487,6 +1498,30 @@ static void * MWVideoPlayerObservation = &MWVideoPlayerObservation;
 
 - (void)selectionModeBackButtonTapped {
     [self dismissUserInterface];
+}
+
+- (void)inbilinSelectButtonTapped:(id)sender {
+    UIButton *selectButton = (UIButton *)sender;
+    if (selectButton.selected ||
+        ([self.delegate respondsToSelector:@selector(photoBrowser:shouldSelectPhotoAtIndex:)] &&
+         [self.delegate photoBrowser:self shouldSelectPhotoAtIndex:_currentPageIndex])) {
+            selectButton.selected = !selectButton.selected;
+            if ([self.delegate respondsToSelector:@selector(photoBrowser:photoAtIndex:selectedChanged:)]) {
+                [self.delegate photoBrowser:self photoAtIndex:_currentPageIndex selectedChanged:selectButton.selected];
+            }
+    }
+}
+
+- (void)selectionModeFinishButtonTapped {
+    if ([self.delegate respondsToSelector:@selector(photoBrowser:isPhotoSelectedAtIndex:)] &&
+        [self.delegate respondsToSelector:@selector(numberOfSelectedPhotosInPhotoBrowser:)] &&
+        [self.delegate numberOfSelectedPhotosInPhotoBrowser:self] == 0 &&
+        ![self.delegate photoBrowser:self isPhotoSelectedAtIndex:_currentPageIndex]) {
+        [self.delegate photoBrowser:self photoAtIndex:_currentPageIndex selectedChanged:YES];
+    }
+    if ([self.delegate respondsToSelector:@selector(photoBrowserDidTappedSelectFinishButton:)]) {
+        [self.delegate photoBrowserDidTappedSelectFinishButton:self];
+    }
 }
 
 #pragma mark - Video
@@ -1699,7 +1734,7 @@ static void * MWVideoPlayerObservation = &MWVideoPlayerObservation;
     CGFloat animationDuration = (animated ? 0.35 : 0);
     
     // Status bar
-    if (!_leaveStatusBarAlone) {
+    if (!_leaveStatusBarAlone && self.mode == MWPhotoBrowserModeNormal) {
 
         // Hide status bar
         if (!_isVCBasedStatusBarAppearance) {
@@ -1755,6 +1790,9 @@ static void * MWVideoPlayerObservation = &MWVideoPlayerObservation;
             if (hidden) _actionBar.frame = CGRectOffset(_actionBar.frame, 0, animatonOffset);
             _actionBar.alpha = alpha;
         }
+        
+        _inbilinSelectionNavigationBar.alpha = alpha;
+        _inbilinSelectionToolBar.alpha = alpha;
 
         // Captions
         for (MWZoomingScrollView *page in _visiblePages) {
@@ -1819,7 +1857,14 @@ static void * MWVideoPlayerObservation = &MWVideoPlayerObservation;
 	}
 }
 
-- (BOOL)areControlsHidden { return (_toolbar.alpha == 0); }
+- (BOOL)areControlsHidden {
+    if (self.mode == MWPhotoBrowserModeNormal) {
+        return (_actionBar.alpha == 0);
+    } else if (self.mode == MWPhotoBrowserModeSelectPhoto) {
+        return (_inbilinSelectionNavigationBar.alpha == 0);
+    }
+    return (_toolbar.alpha == 0);
+}
 - (void)hideControls { [self setControlsHidden:YES animated:YES permanent:YES]; }
 - (void)showControls { [self setControlsHidden:NO animated:YES permanent:YES]; }
 - (void)toggleControls { [self setControlsHidden:![self areControlsHidden] animated:YES permanent:YES]; }
@@ -1872,7 +1917,11 @@ static void * MWVideoPlayerObservation = &MWVideoPlayerObservation;
             // Call delegate method and let them dismiss us
             [_delegate photoBrowserDidFinishModalPresentation:self];
         } else  {
-            [self dismissViewControllerAnimated:YES completion:nil];
+            if (self.navigationController.viewControllers[0] != self) {
+                [self.navigationController popViewControllerAnimated:YES];
+            } else {
+                [self dismissViewControllerAnimated:YES completion:nil];
+            }
         }
     }
 }

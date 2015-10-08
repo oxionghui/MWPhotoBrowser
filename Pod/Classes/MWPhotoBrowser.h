@@ -38,6 +38,7 @@ typedef NS_ENUM(NSUInteger, MWPhotoBrowserMode) {
 - (NSString *)photoBrowser:(MWPhotoBrowser *)photoBrowser titleForPhotoAtIndex:(NSUInteger)index;
 - (void)photoBrowser:(MWPhotoBrowser *)photoBrowser didDisplayPhotoAtIndex:(NSUInteger)index;
 - (void)photoBrowser:(MWPhotoBrowser *)photoBrowser actionButtonPressedForPhotoAtIndex:(NSUInteger)index;
+- (BOOL)photoBrowser:(MWPhotoBrowser *)photoBrowser shouldSelectPhotoAtIndex:(NSUInteger)index;
 - (BOOL)photoBrowser:(MWPhotoBrowser *)photoBrowser isPhotoSelectedAtIndex:(NSUInteger)index;
 - (void)photoBrowser:(MWPhotoBrowser *)photoBrowser photoAtIndex:(NSUInteger)index selectedChanged:(BOOL)selected;
 - (void)photoBrowserDidFinishModalPresentation:(MWPhotoBrowser *)photoBrowser;
@@ -58,6 +59,9 @@ typedef NS_ENUM(NSUInteger, MWPhotoBrowserMode) {
 - (void)photoBrowser:(MWPhotoBrowser *)photoBrowser didCommentPhotoAtIndex:(NSInteger)index;
 - (NSURL *)photoBrowser:(MWPhotoBrowser *)photoBrowser profileImgUrlAtIndex:(NSUInteger)index;
 - (NSString *)photoBrowser:(MWPhotoBrowser *)photoBrowser indexInfoAtIndex:(NSUInteger)index;
+
+- (NSUInteger)numberOfSelectedPhotosInPhotoBrowser:(MWPhotoBrowser *)photoBrowser;
+- (void)photoBrowserDidTappedSelectFinishButton:(MWPhotoBrowser *)photoBrowser;
 
 @end
 

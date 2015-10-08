@@ -11,5 +11,7 @@
 @interface MWInbilinSelectionNavigationBar : UIView
 
 - (void)addBackButtonTarget:(id)target selector:(SEL)selector;
+- (void)addSelectButtonTarget:(id)target selector:(SEL)selector;
+- (void)updateSelectButton:(BOOL)isSelected;
 
 @end
