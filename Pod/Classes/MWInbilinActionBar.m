@@ -206,11 +206,15 @@
 }
 
 - (void)didTapFreeCallButton {
-    
+    if ([self.photoBrowser.delegate respondsToSelector:@selector(photoBrowser:didTappedFreeCallButtonAtIndex:)]) {
+        [self.photoBrowser.delegate photoBrowser:self.photoBrowser didTappedFreeCallButtonAtIndex:self.index];
+    }
 }
 
 - (void)didTapApplyCallButton {
-    
+    if ([self.photoBrowser.delegate respondsToSelector:@selector(photoBrowser:didTappedApplyCallButtonAtIndex:)]) {
+        [self.photoBrowser.delegate photoBrowser:self.photoBrowser didTappedApplyCallButtonAtIndex:self.index];
+    }
 }
 
 @end
