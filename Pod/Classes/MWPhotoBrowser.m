@@ -696,8 +696,22 @@ static void * MWVideoPlayerObservation = &MWVideoPlayerObservation;
         fadeView.backgroundColor = [UIColor colorWithWhite:0 alpha:1];
     } completion:nil];
     
-    float scaleFactor = (imageFromView ? imageFromView.size.width : screenWidth) / screenWidth;
-    CGRect finalImageViewFrame = CGRectMake(0, (screenHeight/2)-((imageFromView.size.height / scaleFactor)/2), screenWidth, imageFromView.size.height / scaleFactor);
+    CGSize imageSize = imageFromView.size;
+    
+    // Calculate Min
+    CGFloat xScale = screenWidth / imageSize.width;    // the scale needed to perfectly fit the image width-wise
+    CGFloat yScale = screenHeight/ imageSize.height;  // the scale needed to perfectly fit the image height-wise
+    CGFloat minScale = MIN(xScale, yScale);
+    if (xScale >= 1 && yScale >= 1) {
+        minScale = 1.0;
+    }
+    
+    CGFloat finalWidth = imageSize.width * minScale;
+    CGFloat finalHeight = imageSize.height * minScale;
+    CGRect finalImageViewFrame = CGRectMake((screenWidth - finalWidth) / 2, (screenHeight - finalHeight) / 2, finalWidth, finalHeight);
+    
+//    float scaleFactor = (imageFromView ? imageFromView.size.width : screenWidth) / screenWidth;
+//    CGRect finalImageViewFrame = CGRectMake(0, (screenHeight/2)-((imageFromView.size.height / scaleFactor)/2), screenWidth, imageFromView.size.height / scaleFactor);
     
     if(_usePopAnimation)
     {
@@ -726,15 +740,27 @@ static void * MWVideoPlayerObservation = &MWVideoPlayerObservation;
     CGFloat screenWidth = screenBound.size.width;
     CGFloat screenHeight = screenBound.size.height;
     
-    float scaleFactor = imageFromView.size.width / screenWidth;
-    
     UIView *fadeView = [[UIView alloc] initWithFrame:CGRectMake(0, 0, screenWidth, screenHeight)];
     fadeView.backgroundColor = [UIColor blackColor];
     fadeView.alpha = fadeAlpha;
     [_applicationWindow addSubview:fadeView];
     
+    CGSize imageSize = imageFromView.size;
+    
+    // Calculate Min
+    CGFloat xScale = screenWidth / imageSize.width;    // the scale needed to perfectly fit the image width-wise
+    CGFloat yScale = screenHeight/ imageSize.height;  // the scale needed to perfectly fit the image height-wise
+    CGFloat minScale = MIN(xScale, yScale);
+    if (xScale >= 1 && yScale >= 1) {
+        minScale = 1.0;
+    }
+    
+    CGFloat finalWidth = imageSize.width * minScale;
+    CGFloat finalHeight = imageSize.height * minScale;
+    CGRect originalImageViewFrame = CGRectMake((screenWidth - finalWidth) / 2, (screenHeight - finalHeight) / 2, finalWidth, finalHeight);
+    
     UIImageView *resizableImageView = [[UIImageView alloc] initWithImage:imageFromView];
-    resizableImageView.frame = (imageFromView) ? CGRectMake(0, (screenHeight/2)-((imageFromView.size.height / scaleFactor)/2)+scrollView.frame.origin.y, screenWidth, imageFromView.size.height / scaleFactor) : CGRectZero;
+    resizableImageView.frame = (imageFromView) ? originalImageViewFrame : CGRectZero;
     resizableImageView.contentMode = UIViewContentModeScaleAspectFill;
     resizableImageView.backgroundColor = [UIColor clearColor];
     resizableImageView.clipsToBounds = YES;
