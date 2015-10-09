@@ -1587,6 +1587,13 @@ static void * MWVideoPlayerObservation = &MWVideoPlayerObservation;
         ([self.delegate respondsToSelector:@selector(photoBrowser:shouldSelectPhotoAtIndex:)] &&
          [self.delegate photoBrowser:self shouldSelectPhotoAtIndex:_currentPageIndex])) {
             selectButton.selected = !selectButton.selected;
+            if (selectButton.selected) {
+                POPSpringAnimation *animation = [POPSpringAnimation animationWithPropertyNamed:kPOPViewScaleXY];
+                animation.fromValue = [NSValue valueWithCGPoint:CGPointMake(0.75, 0.75)];
+                animation.toValue = [NSValue valueWithCGPoint:CGPointMake(1.0, 1.0)];
+                animation.springBounciness = 20;
+                [selectButton pop_addAnimation:animation forKey:@"bounce"];
+            }
             if ([self.delegate respondsToSelector:@selector(photoBrowser:photoAtIndex:selectedChanged:)]) {
                 [self.delegate photoBrowser:self photoAtIndex:_currentPageIndex selectedChanged:selectButton.selected];
             }
