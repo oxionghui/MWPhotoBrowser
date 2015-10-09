@@ -44,30 +44,30 @@
     
     UIFont *font = [UIFont systemFontOfSize:10];
     CGSize iconSize = CGSizeMake(14, 14);
-    CGFloat standardTitleWidth = 47;
-    
-    NSString *likeButtonTitle = [self.likeButton titleForState:UIControlStateNormal];
-    CGSize likeButtonTitleSize = [likeButtonTitle sizeWithAttributes:@{NSFontAttributeName: font}];
-    CGSize likeButtonSize = CGSizeMake(iconSize.width+6+likeButtonTitleSize.width, self.bounds.size.height);
-    self.likeButton.frame = CGRectMake(19, 0, likeButtonSize.width, likeButtonSize.height);
+    CGFloat standardTitleWidth = 40;
     
     NSString *commentButtonTitle = [self.commentButton titleForState:UIControlStateNormal];
     CGSize commentButtonTitleSize = [commentButtonTitle sizeWithAttributes:@{NSFontAttributeName: font}];
     CGSize commentButtonSize = CGSizeMake(iconSize.width+6+commentButtonTitleSize.width, self.bounds.size.height);
-    self.commentButton.frame = CGRectMake(CGRectGetMaxX(self.likeButton.frame) + (standardTitleWidth - likeButtonSize.width), 0, commentButtonSize.width, commentButtonSize.height);
+    self.commentButton.frame = CGRectMake(self.bounds.size.width - commentButtonSize.width - (standardTitleWidth - commentButtonTitleSize.width), 0, commentButtonSize.width, commentButtonSize.height);
+    
+    NSString *likeButtonTitle = [self.likeButton titleForState:UIControlStateNormal];
+    CGSize likeButtonTitleSize = [likeButtonTitle sizeWithAttributes:@{NSFontAttributeName: font}];
+    CGSize likeButtonSize = CGSizeMake(iconSize.width+6+likeButtonTitleSize.width, self.bounds.size.height);
+    self.likeButton.frame = CGRectMake(CGRectGetMinX(self.commentButton.frame) - likeButtonSize.width - (standardTitleWidth - likeButtonTitleSize.width), 0, likeButtonSize.width, likeButtonSize.height);
     
     if (!self.applyCallButton.hidden) {
         NSString *applyCallButtonTitle = [self.applyCallButton titleForState:UIControlStateNormal];
         CGSize applyCallButtonTitleSize = [applyCallButtonTitle sizeWithAttributes:@{NSFontAttributeName: font}];
         CGSize applyCallButtonSize = CGSizeMake(iconSize.width+3+applyCallButtonTitleSize.width, self.bounds.size.height);
-        self.applyCallButton.frame = CGRectMake(self.bounds.size.width - applyCallButtonSize.width - 19, 0, applyCallButtonSize.width, applyCallButtonSize.height);
+        self.applyCallButton.frame = CGRectMake(19, 0, applyCallButtonSize.width, applyCallButtonSize.height);
     }
     
     if (!self.freeCallButton.hidden) {
         NSString *freeCallButtonTitle = [self.freeCallButton titleForState:UIControlStateNormal];
         CGSize freeCallButtonTitleSize = [freeCallButtonTitle sizeWithAttributes:@{NSFontAttributeName: font}];
         CGSize freeCallButtonSize = CGSizeMake(iconSize.width+3+freeCallButtonTitleSize.width, self.bounds.size.height);
-        self.freeCallButton.frame = CGRectMake(self.bounds.size.width - freeCallButtonSize.width - 19, 0, freeCallButtonSize.width, freeCallButtonSize.height);
+        self.freeCallButton.frame = CGRectMake(19, 0, freeCallButtonSize.width, freeCallButtonSize.height);
     }
     
     self.seperatorLine.frame = CGRectMake(12, 0, self.bounds.size.width - 12 * 2, 0.5);
