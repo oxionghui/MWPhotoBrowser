@@ -911,7 +911,10 @@ static void * MWVideoPlayerObservation = &MWVideoPlayerObservation;
         [self performLayout];
         [self.view setNeedsLayout];
     }
-    
+   
+    if (numberOfPhotos == 0) {
+        [self dismissUserInterface];
+    }
 }
 
 - (NSUInteger)numberOfPhotos {
@@ -1434,7 +1437,7 @@ static void * MWVideoPlayerObservation = &MWVideoPlayerObservation;
                 }
                 self.title = [NSString stringWithFormat:@"%lu %@", (unsigned long)numberOfPhotos, photosText];
             }
-        } else if (numberOfPhotos > 1) {
+        } else {
             if (self.mode == MWPhotoBrowserModeNormal &&
                 _normalModeTitleView) {
                 NSString *indexInfo = [self indexInfoAtIndex:_currentPageIndex];
@@ -1451,8 +1454,6 @@ static void * MWVideoPlayerObservation = &MWVideoPlayerObservation;
                     self.title = [NSString stringWithFormat:@"%lu/%lu", (unsigned long)(_currentPageIndex+1), (unsigned long)numberOfPhotos];
                 }
             }
-        } else {
-            self.title = nil;
         }
         
         // Buttons
@@ -1789,7 +1790,7 @@ static void * MWVideoPlayerObservation = &MWVideoPlayerObservation;
     CGFloat animationDuration = (animated ? 0.35 : 0);
     
     // Status bar
-    if (!_leaveStatusBarAlone && self.mode == MWPhotoBrowserModeNormal) {
+    if (!_leaveStatusBarAlone && (self.mode == MWPhotoBrowserModeNormal || self.mode == MWPhotoBrowserModeSelectedPhoto)) {
 
         // Hide status bar
         if (!_isVCBasedStatusBarAppearance) {
@@ -1917,6 +1918,8 @@ static void * MWVideoPlayerObservation = &MWVideoPlayerObservation;
         return (_actionBar.alpha == 0);
     } else if (self.mode == MWPhotoBrowserModeSelectPhoto) {
         return (_inbilinSelectionNavigationBar.alpha == 0);
+    } else if (self.mode == MWPhotoBrowserModeSelectedPhoto) {
+        return (self.navigationController.navigationBar.alpha == 0);
     }
     return (_toolbar.alpha == 0);
 }
