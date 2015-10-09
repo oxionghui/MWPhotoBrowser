@@ -20,6 +20,7 @@ static const CGFloat labelPadding = 10;
 @end
 
 @implementation MWCaptionView
+@synthesize photo = _photo;
 
 - (id)initWithPhoto:(id<MWPhoto>)photo {
     self = [super initWithFrame:CGRectMake(0, 0, 320, 44)]; // Random initial frame

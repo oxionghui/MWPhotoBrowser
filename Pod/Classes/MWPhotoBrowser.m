@@ -15,6 +15,7 @@
 #import <pop/POP.h>
 #import "MWInbilinCaptionView.h"
 #import "MWInbilinNavigationBar.h"
+#import "MWMaskView.h"
 
 #define PADDING                  10
 
@@ -180,6 +181,8 @@ static void * MWVideoPlayerObservation = &MWVideoPlayerObservation;
             _actionBar.autoresizingMask = UIViewAutoresizingFlexibleTopMargin | UIViewAutoresizingFlexibleWidth;
         }
         
+        _captionView = [[MWInbilinCaptionView alloc] initWithPhoto:nil];
+        
         // Toolbar Items
         if (self.displayNavArrows) {
             NSString *arrowPathFormat = @"MWPhotoBrowser.bundle/UIBarButtonItemArrow%@";
@@ -325,6 +328,15 @@ static void * MWVideoPlayerObservation = &MWVideoPlayerObservation;
                 break;
             }
         }
+        
+        if (_captionView) {
+            _captionView.frame = [self frameForCaptionView:_captionView];
+            MWMaskView *captionViewContainer = [[MWMaskView alloc] initWithFrame:self.view.bounds];
+            captionViewContainer.backgroundColor = [UIColor clearColor];
+            [captionViewContainer addSubview:_captionView];
+            [self.view addSubview:captionViewContainer];
+        }
+        
         if (hideToolbar || _actionBar) {
             [_toolbar removeFromSuperview];
         } else {
@@ -1151,12 +1163,12 @@ static void * MWVideoPlayerObservation = &MWVideoPlayerObservation;
 			MWLog(@"Added page at index %lu", (unsigned long)index);
             
             // Add caption
-            UIView <MWCaptionView> *captionView = [self captionViewForPhotoAtIndex:index];
-            if (captionView) {
-                captionView.frame = [self frameForCaptionView:captionView atIndex:index];
-                [_pagingScrollView addSubview:captionView];
-                page.captionView = captionView;
-            }
+//            UIView <MWCaptionView> *captionView = [self captionViewForPhotoAtIndex:index];
+//            if (captionView) {
+//                captionView.frame = [self frameForCaptionView:captionView atIndex:index];
+//                [_pagingScrollView addSubview:captionView];
+//                page.captionView = captionView;
+//            }
             
             // Add play button if needed
             if (page.displayingVideo) {
@@ -1192,7 +1204,6 @@ static void * MWVideoPlayerObservation = &MWVideoPlayerObservation;
             
 		}
 	}
-	
 }
 
 - (void)updateVisiblePageStates {
@@ -1353,6 +1364,15 @@ static void * MWVideoPlayerObservation = &MWVideoPlayerObservation;
 	return CGRectIntegral(CGRectMake(0, self.view.bounds.size.height - height, self.view.bounds.size.width, height));
 }
 
+- (CGRect)frameForCaptionView:(UIView <MWCaptionView> *)captionView {
+    CGSize captionSize = [captionView sizeThatFits:CGSizeMake(self.view.bounds.size.width, 0)];
+    CGRect captionFrame = CGRectMake(0,
+                                     self.view.bounds.size.height - captionSize.height - (_toolbar.superview?_toolbar.frame.size.height:0) - (_actionBar?_actionBar.frame.size.height:0),
+                                     self.view.bounds.size.width,
+                                     captionSize.height);
+    return CGRectIntegral(captionFrame);
+}
+
 - (CGRect)frameForCaptionView:(UIView <MWCaptionView> *)captionView atIndex:(NSUInteger)index {
     CGRect pageFrame = [self frameForPageAtIndex:index];
     CGSize captionSize = [captionView sizeThatFits:CGSizeMake(pageFrame.size.width, 0)];
@@ -1421,7 +1441,6 @@ static void * MWVideoPlayerObservation = &MWVideoPlayerObservation;
 #pragma mark - Navigation
 
 - (void)updateNavigation {
-    
     if (self.mode == MWPhotoBrowserModeNormal || self.mode == MWPhotoBrowserModeSelectedPhoto) {
         // Title
         NSUInteger numberOfPhotos = [self numberOfPhotos];
@@ -1472,6 +1491,18 @@ static void * MWVideoPlayerObservation = &MWVideoPlayerObservation;
         
         if (_actionBar) {
             [_actionBar updateData:_currentPageIndex];
+        }
+        
+        if (_captionView && _captionView.photo != photo) {
+            _captionView.photo = photo;
+            CGRect captionOriginalFrame = _captionView.frame;
+            CGRect captionTargetFrame = [self frameForCaptionView:_captionView];
+            if ([self areControlsHidden]) {
+                captionTargetFrame = CGRectOffset(captionTargetFrame, 0, (_toolbar.superview?_toolbar.frame.size.height:0) + (_actionBar?_actionBar.frame.size.height:0));
+            }
+            if (!CGRectEqualToRect(captionOriginalFrame, captionTargetFrame)) {
+                _captionView.frame = captionTargetFrame;
+            }
         }
     } else if (self.mode == MWPhotoBrowserModePurePhoto) {
         NSUInteger numberOfPhotos = [self numberOfPhotos];
@@ -1828,6 +1859,10 @@ static void * MWVideoPlayerObservation = &MWVideoPlayerObservation;
             }
         }
         
+        if (_captionView) {
+            CGRect captionFrame = [self frameForCaptionView:_captionView];
+            _captionView.frame = CGRectOffset(captionFrame, 0, animatonOffset);
+        }
     }
     [UIView animateWithDuration:animationDuration animations:^(void) {
         
@@ -1860,6 +1895,12 @@ static void * MWVideoPlayerObservation = &MWVideoPlayerObservation;
                 if (hidden) captionFrame = CGRectOffset(captionFrame, 0, (_toolbar.superview?_toolbar.frame.size.height:0) + (_actionBar?_actionBar.frame.size.height:0));
                 v.frame = captionFrame;
             }
+        }
+        
+        if (_captionView) {
+            CGRect captionFrame = [self frameForCaptionView:_captionView];
+            if (hidden) captionFrame = CGRectOffset(captionFrame, 0, (_toolbar.superview?_toolbar.frame.size.height:0) + (_actionBar?_actionBar.frame.size.height:0));
+            _captionView.frame = captionFrame;
         }
         
         // Selected buttons

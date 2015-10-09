@@ -30,4 +30,6 @@
 // the full width of the screen
 - (CGSize)sizeThatFits:(CGSize)size;
 
+@property (nonatomic, strong) id <MWPhoto> photo;
+
 @end

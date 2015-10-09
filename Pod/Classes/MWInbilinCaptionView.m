@@ -14,13 +14,13 @@ static const CGFloat verticalPadding = 10;
 static const CGFloat maxHeight = 110;
 
 @interface MWInbilinCaptionView () {
-    id <MWPhoto> _photo;
     UITextView *_textView;
 }
 
 @end
 
 @implementation MWInbilinCaptionView
+@synthesize photo = _photo;
 
 // Init
 - (id)initWithPhoto:(id<MWPhoto>)photo {
@@ -29,33 +29,39 @@ static const CGFloat maxHeight = 110;
         self.userInteractionEnabled = YES;
         self.backgroundColor = [[UIColor blackColor] colorWithAlphaComponent:0.2];
         
-        _photo = photo;
         self.autoresizingMask = UIViewAutoresizingFlexibleWidth|UIViewAutoresizingFlexibleTopMargin|UIViewAutoresizingFlexibleLeftMargin|UIViewAutoresizingFlexibleRightMargin;
-        [self setupCaption];
+        
+        self.photo = photo;
     }
     return self;
 }
 
+- (void)setPhoto:(id<MWPhoto>)photo {
+    _photo = photo;
+    [self setupCaption];
+}
+
 - (void)setupCaption {
-    UIFont *font = [UIFont systemFontOfSize:14];
-    _textView = [[UITextView alloc] initWithFrame:self.bounds];
-    _textView.autoresizingMask = UIViewAutoresizingFlexibleWidth|UIViewAutoresizingFlexibleHeight;
-    _textView.backgroundColor = [UIColor clearColor];
-    _textView.font = font;
-    _textView.textColor = [UIColor whiteColor];
-    _textView.showsVerticalScrollIndicator = NO;
-    _textView.showsHorizontalScrollIndicator = NO;
-    _textView.editable = NO;
-    _textView.textContainerInset = UIEdgeInsetsMake(verticalPadding, horizontalPadding, verticalPadding, horizontalPadding);
-    if ([_photo respondsToSelector:@selector(caption)]) {
+    if (!_textView) {
+        UIFont *font = [UIFont systemFontOfSize:14];
+        _textView = [[UITextView alloc] initWithFrame:self.bounds];
+        _textView.autoresizingMask = UIViewAutoresizingFlexibleWidth|UIViewAutoresizingFlexibleHeight;
+        _textView.backgroundColor = [UIColor clearColor];
+        _textView.font = font;
+        _textView.textColor = [UIColor whiteColor];
+        _textView.showsVerticalScrollIndicator = NO;
+        _textView.showsHorizontalScrollIndicator = NO;
+        _textView.editable = NO;
+        _textView.textContainerInset = UIEdgeInsetsMake(verticalPadding, horizontalPadding, verticalPadding, horizontalPadding);
+        [self addSubview:_textView];
+    }
+    if (_photo && [_photo respondsToSelector:@selector(caption)]) {
         _textView.text = [_photo caption] ? [_photo caption] : @" ";
     }
-    [self addSubview:_textView];
-    
     
     CGSize textSize = [_textView.text boundingRectWithSize:CGSizeMake(self.bounds.size.width-horizontalPadding*2, maxHeight)
                                                    options:NSStringDrawingUsesLineFragmentOrigin
-                                                attributes:@{NSFontAttributeName: font}
+                                                attributes:@{NSFontAttributeName: _textView.font}
                                                    context:nil].size;
     if (textSize.height > 25) {
         _textView.textAlignment = NSTextAlignmentLeft;

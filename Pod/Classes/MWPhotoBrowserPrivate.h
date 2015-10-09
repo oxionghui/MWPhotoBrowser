@@ -41,6 +41,7 @@
     MWInbilinActionBar *_actionBar;
     MWInbilinSelectionNavigationBar *_inbilinSelectionNavigationBar;
     MWInbilinSelectionToolBar *_inbilinSelectionToolBar;
+    UIView <MWCaptionView> *_captionView;
 	UIToolbar *_toolbar;
 	NSTimer *_controlVisibilityTimer;
 	UIBarButtonItem *_previousButton, *_nextButton, *_actionButton, *_doneButton;
