@@ -84,7 +84,7 @@
     
     UIWindow *_applicationWindow;
     
-    UIView<MWTitleView> *_titleView;
+    UIView<MWTitleView> *_normalModeTitleView;
 }
 
 // Properties

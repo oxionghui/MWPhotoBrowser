@@ -57,7 +57,7 @@
         UIButton *button = [UIButton new];
         [button setTitle:@"完成" forState:UIControlStateNormal];
         [button setTitleColor:UIColorFromRGB(0xffc200) forState:UIControlStateNormal];
-        button.titleLabel.font = [UIFont boldSystemFontOfSize:16];
+        button.titleLabel.font = [UIFont systemFontOfSize:16];
         
         _finishButton = button;
     }

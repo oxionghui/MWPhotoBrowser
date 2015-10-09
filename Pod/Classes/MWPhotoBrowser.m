@@ -275,7 +275,7 @@ static void * MWVideoPlayerObservation = &MWVideoPlayerObservation;
             if (titleViewClass) {
                 UIView<MWTitleView> *titleView = [[titleViewClass alloc] init];
                 self.navigationItem.titleView = titleView;
-                _titleView = titleView;
+                _normalModeTitleView = titleView;
             }
         }
         
@@ -339,6 +339,22 @@ static void * MWVideoPlayerObservation = &MWVideoPlayerObservation;
     } else if (self.mode == MWPhotoBrowserModeSelectPhoto) {
         [self.view addSubview:_inbilinSelectionNavigationBar];
         [self.view addSubview:_inbilinSelectionToolBar];
+    } else if (self.mode == MWPhotoBrowserModeSelectedPhoto) {
+        // We're first on stack so show done button
+        //        _doneButton = [[UIBarButtonItem alloc] initWithTitle:NSLocalizedString(@"Done", nil) style:UIBarButtonItemStylePlain target:self action:@selector(doneButtonPressed:)];
+        UIImage *arrowLeft = [UIImage imageForResourcePath:@"MWPhotoBrowser.bundle/UINavigationBarInbilinArrowLeft@2x" ofType:@"png" inBundle:[NSBundle bundleForClass:[self class]]];
+        _doneButton = [[UIBarButtonItem alloc] initWithImage:arrowLeft style:UIBarButtonItemStylePlain target:self action:@selector(doneButtonPressed:)];
+        // Set appearance
+        [_doneButton setBackgroundImage:nil forState:UIControlStateNormal barMetrics:UIBarMetricsDefault];
+        [_doneButton setBackgroundImage:nil forState:UIControlStateNormal barMetrics:UIBarMetricsLandscapePhone];
+        [_doneButton setBackgroundImage:nil forState:UIControlStateHighlighted barMetrics:UIBarMetricsDefault];
+        [_doneButton setBackgroundImage:nil forState:UIControlStateHighlighted barMetrics:UIBarMetricsLandscapePhone];
+        [_doneButton setTitleTextAttributes:[NSDictionary dictionary] forState:UIControlStateNormal];
+        [_doneButton setTitleTextAttributes:[NSDictionary dictionary] forState:UIControlStateHighlighted];
+        self.navigationItem.leftBarButtonItem = _doneButton;
+        
+        UIImage *deleteActionIcon = [UIImage imageForResourcePath:@"MWPhotoBrowser.bundle/UINavigationBarInbilinDeleteIcon@2x" ofType:@"png" inBundle:[NSBundle bundleForClass:[self class]]];
+        self.navigationItem.rightBarButtonItem = [[UIBarButtonItem alloc] initWithImage:deleteActionIcon style:UIBarButtonItemStylePlain target:self action:@selector(selectedModeDeleteButtonTapped)];
     }
     
     // Update nav
@@ -514,6 +530,12 @@ static void * MWVideoPlayerObservation = &MWVideoPlayerObservation;
     navBar.shadowImage = nil;
     [navBar setBackgroundImage:nil forBarMetrics:UIBarMetricsDefault];
     [navBar setBackgroundImage:nil forBarMetrics:UIBarMetricsLandscapePhone];
+    
+    NSShadow *zeroOffsetShadow = [[NSShadow alloc] init];
+    zeroOffsetShadow.shadowOffset = CGSizeMake(0.0, 0.0);
+    [navBar setTitleTextAttributes:@{NSForegroundColorAttributeName : UIColorFromRGB(0x252525),
+                                     NSFontAttributeName: [UIFont boldSystemFontOfSize:16],
+                                     NSShadowAttributeName: zeroOffsetShadow}];
 }
 
 - (void)storePreviousNavBarAppearance {
@@ -1397,7 +1419,7 @@ static void * MWVideoPlayerObservation = &MWVideoPlayerObservation;
 
 - (void)updateNavigation {
     
-    if (self.mode == MWPhotoBrowserModeNormal) {
+    if (self.mode == MWPhotoBrowserModeNormal || self.mode == MWPhotoBrowserModeSelectedPhoto) {
         // Title
         NSUInteger numberOfPhotos = [self numberOfPhotos];
         if (_gridController) {
@@ -1413,19 +1435,20 @@ static void * MWVideoPlayerObservation = &MWVideoPlayerObservation;
                 self.title = [NSString stringWithFormat:@"%lu %@", (unsigned long)numberOfPhotos, photosText];
             }
         } else if (numberOfPhotos > 1) {
-            if (_titleView) {
+            if (self.mode == MWPhotoBrowserModeNormal &&
+                _normalModeTitleView) {
                 NSString *indexInfo = [self indexInfoAtIndex:_currentPageIndex];
                 if (!indexInfo) {
                     indexInfo = [NSString stringWithFormat:@"%lu/%lu", (unsigned long)(_currentPageIndex+1), (unsigned long)numberOfPhotos];
                 }
-                _titleView.title = [self publishDateStringAtIndex:_currentPageIndex];
-                _titleView.subtitle = indexInfo;
-                [_titleView sizeToFit];
+                _normalModeTitleView.title = [self publishDateStringAtIndex:_currentPageIndex];
+                _normalModeTitleView.subtitle = indexInfo;
+                [_normalModeTitleView sizeToFit];
             } else {
                 if ([_delegate respondsToSelector:@selector(photoBrowser:titleForPhotoAtIndex:)]) {
                     self.title = [_delegate photoBrowser:self titleForPhotoAtIndex:_currentPageIndex];
                 } else {
-                    self.title = [NSString stringWithFormat:@"%lu %@ %lu", (unsigned long)(_currentPageIndex+1), NSLocalizedString(@"of", @"Used in the context: 'Showing 1 of 3 items'"), (unsigned long)numberOfPhotos];
+                    self.title = [NSString stringWithFormat:@"%lu/%lu", (unsigned long)(_currentPageIndex+1), (unsigned long)numberOfPhotos];
                 }
             }
         } else {
@@ -1547,6 +1570,12 @@ static void * MWVideoPlayerObservation = &MWVideoPlayerObservation;
     }
     if ([self.delegate respondsToSelector:@selector(photoBrowserDidTappedSelectFinishButton:)]) {
         [self.delegate photoBrowserDidTappedSelectFinishButton:self];
+    }
+}
+
+- (void)selectedModeDeleteButtonTapped {
+    if ([self.delegate respondsToSelector:@selector(photoBrowser:didTappedDeleteButtonAtIndex:)]) {
+        [self.delegate photoBrowser:self didTappedDeleteButtonAtIndex:_currentPageIndex];
     }
 }
 
