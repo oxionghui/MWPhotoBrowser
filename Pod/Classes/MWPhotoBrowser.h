@@ -57,7 +57,7 @@ typedef NS_ENUM(NSUInteger, MWPhotoBrowserMode) {
 - (void)photoBrowser:(MWPhotoBrowser *)photoBrowser didTappedFreeCallButtonAtIndex:(NSUInteger)index;
 - (NSUInteger)photoBrowser:(MWPhotoBrowser *)photoBrowser praiseNumAtIndex:(NSUInteger)index isPraise:(BOOL*)isPraise;
 - (NSUInteger)photoBrowser:(MWPhotoBrowser *)photoBrowser commentNumAtIndex:(NSUInteger)index isComment:(BOOL*)isComment;
-- (void)photoBrowser:(MWPhotoBrowser *)photoBrowser didPraisePhotoAtIndex:(NSInteger)index;
+- (void)photoBrowser:(MWPhotoBrowser *)photoBrowser didPraisePhotoAtIndex:(NSInteger)index praiseButton:(UIButton *)praiseButton;
 - (NSString *)photoBrowser:(MWPhotoBrowser *)photoBrowser publishDateStringAtIndex:(NSUInteger)index;
 - (void)photoBrowser:(MWPhotoBrowser *)photoBrowser didDeletePhotoAtIndex:(NSInteger)index;
 - (void)photoBrowser:(MWPhotoBrowser *)photoBrowser didCommentPhotoAtIndex:(NSInteger)index;

@@ -128,7 +128,7 @@
         [button setImage:[UIImage imageForResourcePath:@"MWPhotoBrowser.bundle/LikedActionIcon@2x" ofType:@"png" inBundle:[NSBundle bundleForClass:[self class]]] forState:UIControlStateSelected];
         [button.titleLabel setFont:[UIFont systemFontOfSize:10]];
         [button setImageEdgeInsets:UIEdgeInsetsMake(0, -6, 0, 0)];
-        [button addTarget:self action:@selector(didTapLikeButton) forControlEvents:UIControlEventTouchUpInside];
+        [button addTarget:self action:@selector(didTapLikeButton:) forControlEvents:UIControlEventTouchUpInside];
         
         _likeButton = button;
     }
@@ -193,9 +193,9 @@
 
 #pragma mark - Actions
 
-- (void)didTapLikeButton {
-    if ([self.photoBrowser.delegate respondsToSelector:@selector(photoBrowser:didPraisePhotoAtIndex:)]) {
-        [self.photoBrowser.delegate photoBrowser:self.photoBrowser didPraisePhotoAtIndex:self.index];
+- (void)didTapLikeButton:(UIButton *)sender {
+    if ([self.photoBrowser.delegate respondsToSelector:@selector(photoBrowser:didPraisePhotoAtIndex:praiseButton:)]) {
+        [self.photoBrowser.delegate photoBrowser:self.photoBrowser didPraisePhotoAtIndex:self.index praiseButton:sender];
     }
 }
 
