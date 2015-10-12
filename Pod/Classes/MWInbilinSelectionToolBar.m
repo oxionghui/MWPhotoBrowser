@@ -9,6 +9,7 @@
 #import "MWInbilinSelectionToolBar.h"
 #import "MWCommon.h"
 #import <pop/POPSpringAnimation.h>
+#import "UIButton+ExtendedHit.h"
 
 @interface MWInbilinSelectionToolBar ()
 
@@ -36,6 +37,7 @@
     CGSize finishButtonSize = [finishButtonTitle sizeWithAttributes:@{NSFontAttributeName: self.finishButton.titleLabel.font}];
     self.finishButton.frame = CGRectMake(self.bounds.size.width - finishButtonSize.width - 12, 0, finishButtonSize.width, self.bounds.size.height);
     self.countLabel.frame = CGRectMake(self.bounds.size.width - finishButtonSize.width - 12 - 7 - 22, (self.bounds.size.height - 22) / 2, 22, 22);
+    self.finishButton.hitTestEdgeInsets = UIEdgeInsetsMake(0, -(2 * 7 + 12), 0, -12);
 }
 
 - (UILabel *)countLabel {
