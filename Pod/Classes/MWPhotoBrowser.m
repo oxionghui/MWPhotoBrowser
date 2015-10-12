@@ -86,7 +86,7 @@ static void * MWVideoPlayerObservation = &MWVideoPlayerObservation;
     _currentGridContentOffset = CGPointMake(0, CGFLOAT_MAX);
     _didSavePreviousStateOfNavBar = NO;
     _applicationWindow = [[[UIApplication sharedApplication] delegate] window];
-    _animationDuration = 0.28;
+    _animationDuration = 0.35;
     _mode = MWPhotoBrowserModeNormal;
     self.automaticallyAdjustsScrollViewInsets = NO;
     
@@ -707,7 +707,7 @@ static void * MWVideoPlayerObservation = &MWVideoPlayerObservation;
     CGFloat screenHeight = screenBound.size.height;
     
     UIView *fadeView = [[UIView alloc] initWithFrame:CGRectMake(0, 0, screenWidth, screenHeight)];
-    fadeView.backgroundColor = [UIColor colorWithWhite:0 alpha:0];
+    fadeView.backgroundColor = [UIColor colorWithWhite:0 alpha:1];
     [_applicationWindow addSubview:fadeView];
     
     UIImageView *resizableImageView = [[UIImageView alloc] initWithImage:imageFromView];
