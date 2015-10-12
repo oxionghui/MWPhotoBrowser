@@ -68,6 +68,9 @@
 // Return nil to display no caption
 - (NSString *)caption;
 
+// Return photo url
+- (NSURL *)photoURL;
+
 // Cancel any background loading of image data
 - (void)cancelAnyLoading;
 

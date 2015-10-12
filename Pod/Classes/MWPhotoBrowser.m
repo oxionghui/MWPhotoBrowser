@@ -16,6 +16,7 @@
 #import "MWInbilinCaptionView.h"
 #import "MWInbilinNavigationBar.h"
 #import "MWMaskView.h"
+#import <SDWebImage/SDWebImageManager.h>
 
 #define PADDING                  10
 
@@ -2014,6 +2015,8 @@ static void * MWVideoPlayerObservation = &MWVideoPlayerObservation;
 }
 
 - (void)dismissUserInterface {
+    [self notifyWillDismiss];
+    
     if ([self scaleAnimationImageViewAtIndex:_currentPageIndex]) {
         MWZoomingScrollView *scrollView = [self pageDisplayedAtIndex:_currentPageIndex];
         [self performCloseAnimationWithScrollView:scrollView];
@@ -2128,6 +2131,25 @@ static void * MWVideoPlayerObservation = &MWVideoPlayerObservation;
         [self.progressHUD hide:YES];
     }
     self.navigationController.navigationBar.userInteractionEnabled = YES;
+}
+
+#pragma mark - Dismiss Notification
+
+- (void)notifyWillDismiss {
+    if (self.delegate && [self.delegate respondsToSelector:@selector(photoBrowserWillDismiss:)]) {
+        if ([self.navigationController.viewControllers firstObject] == self) {
+            for (int i = 0; i < _photoCount; i++) {
+                @autoreleasepool {
+                    id <MWPhoto> photo = [self photoAtIndex:i];
+                    if (photo.photoURL) {
+                        NSString *key = [[SDWebImageManager sharedManager] cacheKeyForURL:photo.photoURL];
+                        [[SDImageCache sharedImageCache] removeImageForKey:key fromDisk:NO];
+                    }
+                }
+            }
+        }
+        [self.delegate photoBrowserWillDismiss:self];
+    }
 }
 
 @end
