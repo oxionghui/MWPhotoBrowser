@@ -66,17 +66,18 @@
 }
 
 - (void)setSelectionCount:(NSUInteger)selectionCount {
+    NSUInteger originalCount = _countLabel.text.integerValue;
+    
     _countLabel.text = [NSString stringWithFormat:@"%lu", (unsigned long)selectionCount];
     _countLabel.hidden = (selectionCount == 0);
     
-    if (!_countLabel.hidden) {
-        
+    if (!_countLabel.hidden && originalCount != selectionCount) {
+        POPSpringAnimation *animation = [POPSpringAnimation animationWithPropertyNamed:kPOPViewScaleXY];
+        animation.fromValue = [NSValue valueWithCGPoint:CGPointMake(0.8, 0.8)];
+        animation.toValue = [NSValue valueWithCGPoint:CGPointMake(1.0, 1.0)];
+        animation.springBounciness = 15;
+        [_countLabel pop_addAnimation:animation forKey:@"bounce"];
     }
-    POPSpringAnimation *animation = [POPSpringAnimation animationWithPropertyNamed:kPOPViewScaleXY];
-    animation.fromValue = [NSValue valueWithCGPoint:CGPointMake(0.8, 0.8)];
-    animation.toValue = [NSValue valueWithCGPoint:CGPointMake(1.0, 1.0)];
-    animation.springBounciness = 15;
-    [_countLabel pop_addAnimation:animation forKey:@"bounce"];
 }
 
 - (void)addFinishButtonTarget:(id)target action:(SEL)action {
