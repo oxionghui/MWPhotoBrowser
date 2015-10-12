@@ -815,14 +815,14 @@ static void * MWVideoPlayerObservation = &MWVideoPlayerObservation;
         [fadeView removeFromSuperview];
         [resizableImageView removeFromSuperview];
         
-        // Dismiss view controller
-        if ([_delegate respondsToSelector:@selector(photoBrowserDidFinishModalPresentation:)]) {
-            // Call delegate method and let them dismiss us
-            [_delegate photoBrowserDidFinishModalPresentation:self];
-        } else  {
-            [self dismissViewControllerAnimated:NO completion:nil];
-        }
     };
+    // Dismiss view controller
+    if ([_delegate respondsToSelector:@selector(photoBrowserDidFinishModalPresentation:)]) {
+        // Call delegate method and let them dismiss us
+        [_delegate photoBrowserDidFinishModalPresentation:self];
+    } else  {
+        [self dismissViewControllerAnimated:NO completion:nil];
+    }
     
     [UIView animateWithDuration:_animationDuration animations:^{
         fadeView.alpha = 0;
