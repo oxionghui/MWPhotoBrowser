@@ -239,12 +239,14 @@
     self.zoomScale = 0;
     self.minimumZoomScale = 0;
     self.maximumZoomScale = 0;
-    if ([self.photo conformsToProtocol:@protocol(MWProgressivePhoto)] && [(id <MWProgressivePhoto>)self.photo lowQualityImageURL]) {
-        _inbilinProgressView.progress = 0;
-        _inbilinProgressView.hidden = NO;
-    } else {
-        _loadingIndicator.progress = 0;
-        _loadingIndicator.hidden = NO;
+    if (self.photo) {
+        if ([self.photo conformsToProtocol:@protocol(MWProgressivePhoto)] && [(id <MWProgressivePhoto>)self.photo lowQualityImageURL]) {
+            _inbilinProgressView.progress = 0;
+            _inbilinProgressView.hidden = NO;
+        } else {
+            _loadingIndicator.progress = 0;
+            _loadingIndicator.hidden = NO;
+        }
     }
     [self hideImageFailure];
 }
