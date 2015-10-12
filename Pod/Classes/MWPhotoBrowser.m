@@ -1458,11 +1458,12 @@ static void * MWVideoPlayerObservation = &MWVideoPlayerObservation;
                 self.title = [NSString stringWithFormat:@"%lu %@", (unsigned long)numberOfPhotos, photosText];
             }
         } else {
+            NSString *pageIndexString = [NSString stringWithFormat:@"%lu/%lu", (unsigned long)(_currentPageIndex+1), (unsigned long)numberOfPhotos];
             if (self.mode == MWPhotoBrowserModeNormal &&
                 _normalModeTitleView) {
                 NSString *indexInfo = [self indexInfoAtIndex:_currentPageIndex];
                 if (!indexInfo) {
-                    indexInfo = [NSString stringWithFormat:@"%lu/%lu", (unsigned long)(_currentPageIndex+1), (unsigned long)numberOfPhotos];
+                    indexInfo = pageIndexString;
                 }
                 _normalModeTitleView.title = [self publishDateStringAtIndex:_currentPageIndex];
                 _normalModeTitleView.subtitle = indexInfo;
@@ -1471,7 +1472,7 @@ static void * MWVideoPlayerObservation = &MWVideoPlayerObservation;
                 if ([_delegate respondsToSelector:@selector(photoBrowser:titleForPhotoAtIndex:)]) {
                     self.title = [_delegate photoBrowser:self titleForPhotoAtIndex:_currentPageIndex];
                 } else {
-                    self.title = [NSString stringWithFormat:@"%lu/%lu", (unsigned long)(_currentPageIndex+1), (unsigned long)numberOfPhotos];
+                    self.title = pageIndexString;
                 }
             }
         }
@@ -1507,7 +1508,13 @@ static void * MWVideoPlayerObservation = &MWVideoPlayerObservation;
         }
     } else if (self.mode == MWPhotoBrowserModePurePhoto) {
         NSUInteger numberOfPhotos = [self numberOfPhotos];
-        _inbilinNavigationBar.title = [NSString stringWithFormat:@"%lu/%lu", (unsigned long)(_currentPageIndex+1), (unsigned long)numberOfPhotos];
+        if (numberOfPhotos > 1) {
+            _inbilinNavigationBar.hidden = NO;
+            _inbilinNavigationBar.title = [NSString stringWithFormat:@"%lu/%lu", (unsigned long)(_currentPageIndex+1), (unsigned long)numberOfPhotos];
+        } else {
+            _inbilinNavigationBar.hidden = YES;
+        }
+        
     } else if (self.mode == MWPhotoBrowserModeSelectPhoto) {
         if ([self.delegate respondsToSelector:@selector(photoBrowser:isPhotoSelectedAtIndex:)]) {
             BOOL isSelected = [self.delegate photoBrowser:self isPhotoSelectedAtIndex:_currentPageIndex];
