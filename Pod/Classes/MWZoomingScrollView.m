@@ -170,7 +170,7 @@
                 [self setMaxMinZoomScalesForCurrentBounds];
             };
             
-            if (_inbilinProgressView && ABS(_inbilinProgressView.progress - 1.0) < 0.001) {
+            if (_inbilinProgressView && !_inbilinProgressView.hidden && ABS(_inbilinProgressView.progress - 1.0) < 0.001) {
                 UIWindow *applicationWindow = [[[UIApplication sharedApplication] delegate] window];
 
                 UIImageView *resizableImageView = [[UIImageView alloc] initWithImage:_inbilinProgressView.image];
@@ -275,6 +275,7 @@
 - (void)hideLoadingIndicator {
     _loadingIndicator.hidden = YES;
     _inbilinProgressView.hidden = YES;
+    _inbilinProgressView.progress = 0;
 }
 
 - (void)showLoadingIndicator {
