@@ -59,15 +59,8 @@ static const CGFloat maxHeight = 110;
         _textView.text = [_photo caption] ? [_photo caption] : @" ";
     }
     
-    CGSize textSize = [_textView.text boundingRectWithSize:CGSizeMake(self.bounds.size.width-horizontalPadding*2, maxHeight)
-                                                   options:NSStringDrawingUsesLineFragmentOrigin
-                                                attributes:@{NSFontAttributeName: _textView.font}
-                                                   context:nil].size;
-    if (textSize.height > 25) {
-        _textView.textAlignment = NSTextAlignmentLeft;
-    } else {
-        _textView.textAlignment = NSTextAlignmentCenter;
-    }
+    _textView.textAlignment = NSTextAlignmentLeft;
+    
     if (_textView.text == nil ||
         _textView.text.length == 0) {
         self.hidden = YES;
