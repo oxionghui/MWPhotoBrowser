@@ -128,6 +128,8 @@
     UIImage *img = [_photoBrowser imageForPhoto:_photo];
     if (img) {
         [self displayImage];
+
+        
     } else {
         // Will be loading so show loading
         [self showLoadingIndicator];
@@ -149,21 +151,61 @@
 		if (img) {
 			
 			// Hide indicator
-			[self hideLoadingIndicator];
-			
-			// Set image
-			_photoImageView.image = img;
-			_photoImageView.hidden = NO;
-			
-			// Setup photo frame
-			CGRect photoImageViewFrame;
-			photoImageViewFrame.origin = CGPointZero;
-			photoImageViewFrame.size = img.size;
-			_photoImageView.frame = photoImageViewFrame;
-			self.contentSize = photoImageViewFrame.size;
+            
+            void (^displayImageBlock)(void) = ^{
+                [self hideLoadingIndicator];
+                
+                // Set image
+                _photoImageView.image = img;
+                _photoImageView.hidden = NO;
+                
+                // Setup photo frame
+                CGRect photoImageViewFrame;
+                photoImageViewFrame.origin = CGPointZero;
+                photoImageViewFrame.size = img.size;
+                _photoImageView.frame = photoImageViewFrame;
+                self.contentSize = photoImageViewFrame.size;
+                
+                // Set zoom to minimum zoom
+                [self setMaxMinZoomScalesForCurrentBounds];
+            };
+            
+            if (_inbilinProgressView && ABS(_inbilinProgressView.progress - 1.0) < 0.001) {
+                UIWindow *applicationWindow = [[[UIApplication sharedApplication] delegate] window];
 
-			// Set zoom to minimum zoom
-			[self setMaxMinZoomScalesForCurrentBounds];
+                UIImageView *resizableImageView = [[UIImageView alloc] initWithImage:_inbilinProgressView.image];
+                resizableImageView.frame = _inbilinProgressView.frame;
+                resizableImageView.clipsToBounds = YES;
+                resizableImageView.contentMode = UIViewContentModeScaleAspectFill;
+                resizableImageView.backgroundColor = [UIColor colorWithWhite:0 alpha:1];
+                [applicationWindow addSubview:resizableImageView];
+                
+                CGSize imageSize = img.size;
+                
+                CGRect screenBound = [[UIScreen mainScreen] bounds];
+                CGFloat screenWidth = screenBound.size.width;
+                CGFloat screenHeight = screenBound.size.height;
+                
+                // Calculate Min
+                CGFloat xScale = screenWidth / imageSize.width;    // the scale needed to perfectly fit the image width-wise
+                CGFloat yScale = screenHeight/ imageSize.height;  // the scale needed to perfectly fit the image height-wise
+                CGFloat minScale = MIN(xScale, yScale);
+                if (xScale >= 1 && yScale >= 1) {
+                    minScale = 1.0;
+                }
+                
+                CGFloat finalWidth = imageSize.width * minScale;
+                CGFloat finalHeight = imageSize.height * minScale;
+                CGRect finalImageViewFrame = CGRectMake((screenWidth - finalWidth) / 2, (screenHeight - finalHeight) / 2, finalWidth, finalHeight);
+                [UIView animateWithDuration:0.35 animations:^{
+                    resizableImageView.frame = finalImageViewFrame;
+                } completion:^(BOOL finished) {
+                    displayImageBlock();
+                    [resizableImageView removeFromSuperview];
+                }];
+            } else {
+                displayImageBlock();
+            }
 			
 		} else  {
 

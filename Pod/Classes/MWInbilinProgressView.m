@@ -79,7 +79,7 @@
 
 - (CGSize)sizeThatFits:(CGSize)size {
     if (self.image) {
-        return self.image.size;
+        return CGSizeMake(self.image.size.width / 2.0, self.image.size.height / 2.0);
     } else {
         return CGSizeZero;
     }
