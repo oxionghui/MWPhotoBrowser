@@ -171,14 +171,12 @@
             };
             
             if (_inbilinProgressView && !_inbilinProgressView.hidden && ABS(_inbilinProgressView.progress - 1.0) < 0.001) {
-                UIWindow *applicationWindow = [[[UIApplication sharedApplication] delegate] window];
-
                 UIImageView *resizableImageView = [[UIImageView alloc] initWithImage:_inbilinProgressView.image];
                 resizableImageView.frame = _inbilinProgressView.frame;
                 resizableImageView.clipsToBounds = YES;
                 resizableImageView.contentMode = UIViewContentModeScaleAspectFill;
                 resizableImageView.backgroundColor = [UIColor colorWithWhite:0 alpha:1];
-                [applicationWindow addSubview:resizableImageView];
+                [self addSubview:resizableImageView];
                 
                 CGSize imageSize = img.size;
                 
