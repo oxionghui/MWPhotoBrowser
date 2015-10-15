@@ -171,7 +171,7 @@
             };
             
             if (_inbilinProgressView && !_inbilinProgressView.hidden && ABS(_inbilinProgressView.progress - 1.0) < 0.001) {
-                UIImageView *resizableImageView = [[UIImageView alloc] initWithImage:_inbilinProgressView.image];
+                UIImageView *resizableImageView = [[UIImageView alloc] initWithImage:img];
                 resizableImageView.frame = _inbilinProgressView.frame;
                 resizableImageView.clipsToBounds = YES;
                 resizableImageView.contentMode = UIViewContentModeScaleAspectFill;
