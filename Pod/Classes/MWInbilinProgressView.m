@@ -79,7 +79,23 @@
 
 - (CGSize)sizeThatFits:(CGSize)size {
     if (self.image) {
-        return CGSizeMake(self.image.size.width / 2.0, self.image.size.height / 2.0);
+        CGSize imageSize = self.image.size;
+        
+        CGRect screenBound = [[UIScreen mainScreen] bounds];
+        CGFloat screenWidth = screenBound.size.width;
+        CGFloat screenHeight = screenBound.size.height;
+        
+        // Calculate Min
+        CGFloat xScale = imageSize.width / screenWidth;    // the scale needed to perfectly fit the image width-wise
+        CGFloat yScale = imageSize.height / screenHeight;  // the scale needed to perfectly fit the image height-wise
+        CGFloat maxScale = MAX(xScale, yScale);
+        if (xScale > 1 || yScale > 1) {
+            CGFloat finalWidth = imageSize.width / maxScale;
+            CGFloat finalHeight = imageSize.height / maxScale;
+            return CGSizeMake(finalWidth, finalHeight);
+        } else {
+            return CGSizeMake(self.image.size.width / 2.0, self.image.size.height / 2.0);
+        }
     } else {
         return CGSizeZero;
     }

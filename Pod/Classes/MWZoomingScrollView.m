@@ -167,6 +167,7 @@
                 
                 // Set zoom to minimum zoom
                 [self setMaxMinZoomScalesForCurrentBounds];
+                [self setNeedsLayout];
             };
             
             if (_inbilinProgressView && !_inbilinProgressView.hidden && _inbilinProgressView.image && ABS(_inbilinProgressView.progress - 1.0) < 0.001) {
@@ -208,9 +209,9 @@
 
             // Show image failure
             [self displayImageFailure];
+            [self setNeedsLayout];
 			
 		}
-		[self setNeedsLayout];
 	}
 }
 
