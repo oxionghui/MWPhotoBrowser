@@ -150,7 +150,8 @@
         // Check what type of url it is
         if ([[[_photoURL scheme] lowercaseString] isEqualToString:@"assets-library"]) {
             exists = YES;
-        } else if ([_photoURL isFileReferenceURL]) {
+        } else if ([_photoURL isFileReferenceURL] ||
+                   [_photoURL isFileURL]) {
             exists = YES;
         } else {
             // Web image
@@ -168,25 +169,29 @@
         if (self.underlyingImage) {
             [self imageLoadingComplete];
         } else {
-            if (self.lowQualityImage && ![self underlyingImageExistsLocally]) {
-                [[NSNotificationCenter defaultCenter] postNotificationName:MWPHOTO_LOW_QUALITY_IMAGE_LOADED_NOTIFICATION
-                                                                    object:self];
+            if ([self underlyingImageExistsLocally]) {
                 [self performLoadUnderlyingImageAndNotify];
             } else {
-                if (self.lowQualityImageURL && ![self underlyingImageExistsLocally]) {
-                    [self _downloadImageWithURL:self.lowQualityImageURL retry:0 completion:^(UIImage *image, BOOL success){
-                        if (success) {
-                            _lowQualityImage = image;
-                            [[NSNotificationCenter defaultCenter] postNotificationName:MWPHOTO_LOW_QUALITY_IMAGE_LOADED_NOTIFICATION
-                                                                                object:self];
-                            [self performLoadUnderlyingImageAndNotify];
-                        } else {
-                            _webImageOperation = nil;
-                            [self imageLoadingComplete];
-                        }
-                    }];
-                } else {
+                if (self.lowQualityImage) {
+                    [[NSNotificationCenter defaultCenter] postNotificationName:MWPHOTO_LOW_QUALITY_IMAGE_LOADED_NOTIFICATION
+                                                                        object:self];
                     [self performLoadUnderlyingImageAndNotify];
+                } else {
+                    if (self.lowQualityImageURL) {
+                        [self _downloadImageWithURL:self.lowQualityImageURL retry:0 completion:^(UIImage *image, BOOL success){
+                            if (success) {
+                                _lowQualityImage = image;
+                                [[NSNotificationCenter defaultCenter] postNotificationName:MWPHOTO_LOW_QUALITY_IMAGE_LOADED_NOTIFICATION
+                                                                                    object:self];
+                                [self performLoadUnderlyingImageAndNotify];
+                            } else {
+                                _webImageOperation = nil;
+                                [self imageLoadingComplete];
+                            }
+                        }];
+                    } else {
+                        [self performLoadUnderlyingImageAndNotify];
+                    }
                 }
             }
         }
