@@ -168,12 +168,12 @@
         if (self.underlyingImage) {
             [self imageLoadingComplete];
         } else {
-            if (self.lowQualityImage) {
+            if (self.lowQualityImage && ![self underlyingImageExistsLocally]) {
                 [[NSNotificationCenter defaultCenter] postNotificationName:MWPHOTO_LOW_QUALITY_IMAGE_LOADED_NOTIFICATION
                                                                     object:self];
                 [self performLoadUnderlyingImageAndNotify];
             } else {
-                if (self.lowQualityImageURL) {
+                if (self.lowQualityImageURL && ![self underlyingImageExistsLocally]) {
                     [self _downloadImageWithURL:self.lowQualityImageURL retry:0 completion:^(UIImage *image, BOOL success){
                         if (success) {
                             _lowQualityImage = image;
