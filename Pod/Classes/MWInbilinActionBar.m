@@ -44,7 +44,7 @@
     
     UIFont *font = [UIFont systemFontOfSize:10];
     CGSize iconSize = CGSizeMake(14, 14);
-    CGFloat standardTitleWidth = 40;
+    CGFloat standardTitleWidth = 32;
     
     NSString *commentButtonTitle = [self.commentButton titleForState:UIControlStateNormal];
     CGSize commentButtonTitleSize = [commentButtonTitle sizeWithAttributes:@{NSFontAttributeName: font}];
