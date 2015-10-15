@@ -105,6 +105,7 @@
     _photoImageView.hidden = NO;
     _photoImageView.image = nil;
     _index = NSUIntegerMax;
+    [self hideLoadingIndicator];
 }
 
 - (BOOL)displayingVideo {
@@ -128,8 +129,6 @@
     UIImage *img = [_photoBrowser imageForPhoto:_photo];
     if (img) {
         [self displayImage];
-
-        
     } else {
         // Will be loading so show loading
         [self showLoadingIndicator];
@@ -170,7 +169,7 @@
                 [self setMaxMinZoomScalesForCurrentBounds];
             };
             
-            if (_inbilinProgressView && !_inbilinProgressView.hidden && ABS(_inbilinProgressView.progress - 1.0) < 0.001) {
+            if (_inbilinProgressView && !_inbilinProgressView.hidden && _inbilinProgressView.image && ABS(_inbilinProgressView.progress - 1.0) < 0.001) {
                 UIImageView *resizableImageView = [[UIImageView alloc] initWithImage:img];
                 resizableImageView.frame = _inbilinProgressView.frame;
                 resizableImageView.clipsToBounds = YES;
@@ -255,6 +254,13 @@
             float progress = [[dict valueForKey:@"progress"] floatValue];
             _loadingIndicator.progress = MAX(MIN(1, progress), 0);
             _inbilinProgressView.progress = MAX(MIN(1, progress), 0);
+            if (!_inbilinProgressView.image &&
+                ([self.photo conformsToProtocol:@protocol(MWProgressivePhoto)] && [(id <MWProgressivePhoto>)self.photo lowQualityImage])) {
+                _inbilinProgressView.image = [(id <MWProgressivePhoto>)self.photo lowQualityImage];
+                [self setNeedsLayout];
+                [self layoutIfNeeded];
+                NSLog(@"Error.");
+            }
         }
     });
 }
@@ -264,6 +270,9 @@
         if (notification.object == self.photo) {
             UIImage *lowQualityImage = [(id <MWProgressivePhoto>)self.photo lowQualityImage];
             _inbilinProgressView.image = lowQualityImage;
+            if (_inbilinProgressView.hidden) {
+                _inbilinProgressView.hidden = NO;
+            }
             [self setNeedsLayout];
             [self layoutIfNeeded];
         }
@@ -274,6 +283,7 @@
     _loadingIndicator.hidden = YES;
     _inbilinProgressView.hidden = YES;
     _inbilinProgressView.progress = 0;
+    _inbilinProgressView.image = nil;
 }
 
 - (void)showLoadingIndicator {
