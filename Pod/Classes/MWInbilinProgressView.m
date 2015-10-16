@@ -80,6 +80,8 @@
 - (CGSize)sizeThatFits:(CGSize)size {
     if (self.image) {
         CGSize imageSize = self.image.size;
+        imageSize.width /= 2;
+        imageSize.height /= 2;
         
         CGRect screenBound = [[UIScreen mainScreen] bounds];
         CGFloat screenWidth = screenBound.size.width;
@@ -94,8 +96,8 @@
             CGFloat finalHeight = imageSize.height / maxScale;
             return CGSizeMake(finalWidth, finalHeight);
         } else {
-            return CGSizeMake(self.image.size.width / 2.0, self.image.size.height / 2.0);
-        }
+            return imageSize;
+        t }
     } else {
         return CGSizeZero;
     }
