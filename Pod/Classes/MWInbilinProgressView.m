@@ -97,7 +97,7 @@
             return CGSizeMake(finalWidth, finalHeight);
         } else {
             return imageSize;
-        t }
+        }
     } else {
         return CGSizeZero;
     }
