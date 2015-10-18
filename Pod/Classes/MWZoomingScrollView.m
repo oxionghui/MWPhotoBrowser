@@ -24,7 +24,7 @@
 	DACircularProgressView *_loadingIndicator;
     MWInbilinProgressView *_inbilinProgressView;
     UIImageView *_loadingError;
-    
+    UIView __weak *_resizableImageView;
 }
 
 @end
@@ -106,6 +106,7 @@
     _photoImageView.image = nil;
     _index = NSUIntegerMax;
     [self hideLoadingIndicator];
+    [_resizableImageView.layer removeAllAnimations];
 }
 
 - (BOOL)displayingVideo {
@@ -177,6 +178,7 @@
                 resizableImageView.contentMode = UIViewContentModeScaleAspectFill;
                 resizableImageView.backgroundColor = [UIColor colorWithWhite:0 alpha:1];
                 [self addSubview:resizableImageView];
+                _resizableImageView = resizableImageView;
                 
                 CGSize imageSize = img.size;
                 
@@ -196,9 +198,11 @@
                 CGFloat finalHeight = imageSize.height * minScale;
                 CGRect finalImageViewFrame = CGRectMake((screenWidth - finalWidth) / 2, (screenHeight - finalHeight) / 2, finalWidth, finalHeight);
                 [UIView animateWithDuration:0.35 animations:^{
-                    resizableImageView.frame = finalImageViewFrame;
+                    resizableImageView.layer.frame = finalImageViewFrame;
                 } completion:^(BOOL finished) {
-                    displayImageBlock();
+                    if (finished) {
+                        displayImageBlock();
+                    }
                     [resizableImageView removeFromSuperview];
                 }];
             } else {
