@@ -99,7 +99,7 @@
             return imageSize;
         }
     } else {
-        return CGSizeZero;
+        return CGSizeMake(44, 44);
     }
 }
 
