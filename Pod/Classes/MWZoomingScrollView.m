@@ -297,8 +297,10 @@
     self.maximumZoomScale = 0;
     if (self.photo) {
         if ([self.photo conformsToProtocol:@protocol(MWProgressivePhoto)] && [(id <MWProgressivePhoto>)self.photo lowQualityImageURL]) {
-            _inbilinProgressView.progress = 0;
-            _inbilinProgressView.hidden = NO;
+            if (![self.photo underlyingImageExistsLocally]) {
+                _inbilinProgressView.progress = 0;
+                _inbilinProgressView.hidden = NO;
+            }
         } else {
             _loadingIndicator.progress = 0;
             _loadingIndicator.hidden = NO;
