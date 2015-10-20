@@ -218,7 +218,8 @@ static void * MWVideoPlayerObservation = &MWVideoPlayerObservation;
         [self.view addGestureRecognizer:swipeGesture];
     }
     
-    if ([self scaleAnimationImageViewAtIndex:_currentPageIndex]) {
+    if ([self scaleAnimationImageViewAtIndex:_currentPageIndex] ||
+        [self scaleImageAtIndex:_currentPageIndex]) {
         id <MWPhoto> photo = [self photoAtIndex:_currentPageIndex];
         if ([photo underlyingImageExistsLocally]) {
             // Transition animation
@@ -2024,7 +2025,8 @@ static void * MWVideoPlayerObservation = &MWVideoPlayerObservation;
 - (void)dismissUserInterface {
     [self notifyWillDismiss];
     
-    if ([self scaleAnimationImageViewAtIndex:_currentPageIndex]) {
+    if ([self scaleAnimationImageViewAtIndex:_currentPageIndex] ||
+        [self scaleImageAtIndex:_currentPageIndex]) {
         MWZoomingScrollView *scrollView = [self pageDisplayedAtIndex:_currentPageIndex];
         [self performCloseAnimationWithScrollView:scrollView];
     } else {
@@ -2036,10 +2038,11 @@ static void * MWVideoPlayerObservation = &MWVideoPlayerObservation;
             if (self.navigationController.viewControllers[0] != self) {
                 [self.navigationController popViewControllerAnimated:YES];
             } else {
-                [self dismissViewControllerAnimated:YES completion:nil];
+                [self dismissViewControllerAnimated:(self.mode != MWPhotoBrowserModePurePhoto) completion:nil];
             }
         }
     }
+    [self notifyDidDismiss];
 }
 
 - (void)handleLongPress {
@@ -2073,21 +2076,11 @@ static void * MWVideoPlayerObservation = &MWVideoPlayerObservation;
             }
             self.activityViewController = [[UIActivityViewController alloc] initWithActivityItems:items applicationActivities:nil];
             
-            // Show loading spinner after a couple of seconds
-            double delayInSeconds = 2.0;
-            dispatch_time_t popTime = dispatch_time(DISPATCH_TIME_NOW, (int64_t)(delayInSeconds * NSEC_PER_SEC));
-            dispatch_after(popTime, dispatch_get_main_queue(), ^(void){
-                if (self.activityViewController) {
-                    [self showProgressHUDWithMessage:nil];
-                }
-            });
-
             // Show
             typeof(self) __weak weakSelf = self;
             [self.activityViewController setCompletionHandler:^(NSString *activityType, BOOL completed) {
                 weakSelf.activityViewController = nil;
                 [weakSelf hideControlsAfterDelay];
-                [weakSelf hideProgressHUD:YES];
             }];
             // iOS 8 - Set the Anchor Point for the popover
             if (SYSTEM_VERSION_GREATER_THAN_OR_EQUAL_TO(@"8")) {
@@ -2156,6 +2149,12 @@ static void * MWVideoPlayerObservation = &MWVideoPlayerObservation;
             }
         }
         [self.delegate photoBrowserWillDismiss:self];
+    }
+}
+
+- (void)notifyDidDismiss {
+    if ([self.delegate respondsToSelector:@selector(photoBrowserDidDismiss:)]) {
+        [self.delegate photoBrowserDidDismiss:self];
     }
 }
 

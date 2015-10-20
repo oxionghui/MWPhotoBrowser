@@ -22,7 +22,7 @@ typedef NS_ENUM(NSUInteger, MWPhotoBrowserMode) {
     MWPhotoBrowserModeNormal,
     MWPhotoBrowserModePurePhoto,
     MWPhotoBrowserModeSelectPhoto,
-    MWPhotoBrowserModeSelectedPhoto
+    MWPhotoBrowserModeSelectedPhoto,
 };
 
 @class MWPhotoBrowser;
@@ -44,6 +44,7 @@ typedef NS_ENUM(NSUInteger, MWPhotoBrowserMode) {
 - (void)photoBrowser:(MWPhotoBrowser *)photoBrowser photoAtIndex:(NSUInteger)index selectedChanged:(BOOL)selected;
 - (void)photoBrowserDidFinishModalPresentation:(MWPhotoBrowser *)photoBrowser;
 - (void)photoBrowserWillDismiss:(MWPhotoBrowser *)photoBrowser;
+- (void)photoBrowserDidDismiss:(MWPhotoBrowser *)photoBrowser;
 
 - (id <MWPhoto>)photoBrowser:(MWPhotoBrowser *)photoBrowser scaleImageAtIndex:(NSUInteger)index;
 - (UIImageView *)photoBrowser:(MWPhotoBrowser *)photoBrowser scaleAnimationImageViewAtIndex:(NSUInteger)index;
