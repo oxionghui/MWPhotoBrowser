@@ -46,6 +46,7 @@
         _bottomProgressView = [UIView new];
         
         _leftProgressView.backgroundColor = _topProgressView.backgroundColor = _rightProgressView.backgroundColor = _bottomProgressView.backgroundColor = UIColorFromRGB(0xffc200);
+        _leftProgressView.alpha = _topProgressView.alpha = _rightProgressView.alpha = _bottomProgressView.alpha = 0.25;
         
         [self addSubview:_leftProgressView];
         [self addSubview:_topProgressView];
