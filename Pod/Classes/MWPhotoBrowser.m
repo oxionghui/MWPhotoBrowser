@@ -206,6 +206,8 @@ static void * MWVideoPlayerObservation = &MWVideoPlayerObservation;
         _inbilinSelectionToolBar = [[MWInbilinSelectionToolBar alloc] initWithFrame:[self frameForToolbarAtOrientation:self.interfaceOrientation]];
         [_inbilinSelectionToolBar addFinishButtonTarget:self action:@selector(selectionModeFinishButtonTapped)];
         [_inbilinSelectionToolBar setSelectionCount:0];
+    } else if (self.mode == MWPhotoBrowserModeSelectSinglePhoto) {
+//        No extra work
     }
     
     // Update
@@ -369,6 +371,21 @@ static void * MWVideoPlayerObservation = &MWVideoPlayerObservation;
         
         UIImage *deleteActionIcon = [UIImage imageForResourcePath:@"MWPhotoBrowser.bundle/UINavigationBarInbilinDeleteIcon@2x" ofType:@"png" inBundle:[NSBundle bundleForClass:[self class]]];
         self.navigationItem.rightBarButtonItem = [[UIBarButtonItem alloc] initWithImage:deleteActionIcon style:UIBarButtonItemStylePlain target:self action:@selector(selectedModeDeleteButtonTapped)];
+    } else if (self.mode == MWPhotoBrowserModeSelectSinglePhoto) {
+        UIImage *doneButtonImage = [UIImage imageForResourcePath:@"MWPhotoBrowser.bundle/UIBarButtonItemDone@2x" ofType:@"png" inBundle:[NSBundle bundleForClass:[self class]]];
+        UIBarButtonItem *doneButton = [[UIBarButtonItem alloc] initWithImage:doneButtonImage style:UIBarButtonItemStyleDone target:self action:@selector(doneButtonPressed:)];
+        // Set appearance
+        if ([UIBarButtonItem respondsToSelector:@selector(appearance)]) {
+            [doneButton setBackgroundImage:nil forState:UIControlStateNormal barMetrics:UIBarMetricsDefault];
+            [doneButton setBackgroundImage:nil forState:UIControlStateNormal barMetrics:UIBarMetricsLandscapePhone];
+            [doneButton setBackgroundImage:nil forState:UIControlStateHighlighted barMetrics:UIBarMetricsDefault];
+            [doneButton setBackgroundImage:nil forState:UIControlStateHighlighted barMetrics:UIBarMetricsLandscapePhone];
+            [doneButton setTitleTextAttributes:[NSDictionary dictionary] forState:UIControlStateNormal];
+            [doneButton setTitleTextAttributes:[NSDictionary dictionary] forState:UIControlStateHighlighted];
+        }
+        self.navigationItem.rightBarButtonItem = doneButton;
+        
+        _doneButton = doneButton;
     }
     
     // Update nav
@@ -2034,6 +2051,8 @@ static void * MWVideoPlayerObservation = &MWVideoPlayerObservation;
         if ([_delegate respondsToSelector:@selector(photoBrowserDidFinishModalPresentation:)]) {
             // Call delegate method and let them dismiss us
             [_delegate photoBrowserDidFinishModalPresentation:self];
+        } else if ([_delegate respondsToSelector:@selector(photoBrowserDidTappedDoneButton:)]) {
+            [_delegate photoBrowserDidTappedDoneButton:self];
         } else  {
             if (self.navigationController.viewControllers[0] != self) {
                 [self.navigationController popViewControllerAnimated:YES];
