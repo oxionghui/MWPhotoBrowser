@@ -17,8 +17,7 @@
 @property (nonatomic, weak) MWPhotoBrowser *photoBrowser;
 @property (nonatomic, strong) UIButton *likeButton;
 @property (nonatomic, strong) UIButton *commentButton;
-@property (nonatomic, strong) UIButton *freeCallButton;
-@property (nonatomic, strong) UIButton *applyCallButton;
+@property (nonatomic, strong) UIButton *greetButton;
 @property (nonatomic, strong) UIView *seperatorLine;
 
 @end
@@ -32,8 +31,7 @@
         self.backgroundColor = [[UIColor blackColor] colorWithAlphaComponent:0.2];
         [self addSubview:self.likeButton];
         [self addSubview:self.commentButton];
-        [self addSubview:self.freeCallButton];
-        [self addSubview:self.applyCallButton];
+        [self addSubview:self.greetButton];
         [self addSubview:self.seperatorLine];
     }
     return self;
@@ -56,18 +54,11 @@
     CGSize likeButtonSize = CGSizeMake(iconSize.width+6+likeButtonTitleSize.width, self.bounds.size.height);
     self.likeButton.frame = CGRectMake(CGRectGetMinX(self.commentButton.frame) - likeButtonSize.width - (standardTitleWidth - likeButtonTitleSize.width), 0, likeButtonSize.width, likeButtonSize.height);
     
-    if (!self.applyCallButton.hidden) {
-        NSString *applyCallButtonTitle = [self.applyCallButton titleForState:UIControlStateNormal];
-        CGSize applyCallButtonTitleSize = [applyCallButtonTitle sizeWithAttributes:@{NSFontAttributeName: font}];
-        CGSize applyCallButtonSize = CGSizeMake(iconSize.width+3+applyCallButtonTitleSize.width, self.bounds.size.height);
-        self.applyCallButton.frame = CGRectMake(19, 0, applyCallButtonSize.width, applyCallButtonSize.height);
-    }
-    
-    if (!self.freeCallButton.hidden) {
-        NSString *freeCallButtonTitle = [self.freeCallButton titleForState:UIControlStateNormal];
-        CGSize freeCallButtonTitleSize = [freeCallButtonTitle sizeWithAttributes:@{NSFontAttributeName: font}];
-        CGSize freeCallButtonSize = CGSizeMake(iconSize.width+3+freeCallButtonTitleSize.width, self.bounds.size.height);
-        self.freeCallButton.frame = CGRectMake(19, 0, freeCallButtonSize.width, freeCallButtonSize.height);
+    if (!self.greetButton.hidden) {
+        NSString *greetButtonTitle = [self.greetButton titleForState:UIControlStateNormal];
+        CGSize greetButtonTitleSize = [greetButtonTitle sizeWithAttributes:@{NSFontAttributeName: font}];
+        CGSize greetButtonSize = CGSizeMake(iconSize.width+3+greetButtonTitleSize.width, self.bounds.size.height);
+        self.greetButton.frame = CGRectMake(19, 0, greetButtonSize.width, greetButtonSize.height);
     }
     
     self.seperatorLine.frame = CGRectMake(12, 0, self.bounds.size.width - 12 * 2, 0.5);
@@ -99,18 +90,11 @@
         self.commentButton.selected = commented;
     }
     
-    if ([self.photoBrowser.delegate respondsToSelector:@selector(photoBrowser:shouldShowApplyCallActionButtonAtIndex:)] &&
-        [self.photoBrowser.delegate photoBrowser:self.photoBrowser shouldShowApplyCallActionButtonAtIndex:index]) {
-        self.applyCallButton.hidden = NO;
+    if ([self.photoBrowser.delegate respondsToSelector:@selector(photoBrowser:shouldShowGreetActionButtonAtIndex:)] &&
+        [self.photoBrowser.delegate photoBrowser:self.photoBrowser shouldShowGreetActionButtonAtIndex:index]) {
+        self.greetButton.hidden = NO;
     } else {
-        self.applyCallButton.hidden = YES;
-    }
-    
-    if ([self.photoBrowser.delegate respondsToSelector:@selector(photoBrowser:shouldShowFreeCallActionButtonAtIndex:)] &&
-        [self.photoBrowser.delegate photoBrowser:self.photoBrowser shouldShowFreeCallActionButtonAtIndex:index]) {
-        self.freeCallButton.hidden = NO;
-    } else {
-        self.freeCallButton.hidden = YES;
+        self.greetButton.hidden = YES;
     }
     
     [self setNeedsLayout];
@@ -151,34 +135,21 @@
     return _commentButton;
 }
 
-- (UIButton *)freeCallButton {
-    if (!_freeCallButton) {
+- (UIButton *)greetButton {
+    if (!_greetButton) {
         UIButton *button = [UIButton new];
-        [button setTitleColor:UIColorFromRGB(0x4cda64) forState:UIControlStateNormal];
-        [button setImage:[UIImage imageForResourcePath:@"MWPhotoBrowser.bundle/FreeCallActionIcon@2x" ofType:@"png" inBundle:[NSBundle bundleForClass:[self class]]] forState:UIControlStateNormal];
-        [button.titleLabel setFont:[UIFont systemFontOfSize:10]];
-        [button setTitleEdgeInsets:UIEdgeInsetsMake(0, 3, 0, 0)];
-        [button setTitle:@"免费电话" forState:UIControlStateNormal];
-        [button addTarget:self action:@selector(didTapFreeCallButton) forControlEvents:UIControlEventTouchUpInside];
-        
-        _freeCallButton = button;
-    }
-    return _freeCallButton;
-}
-
-- (UIButton *)applyCallButton {
-    if (!_applyCallButton) {
-        UIButton *button = [UIButton new];
+        [button setTitle:@"打招呼" forState:UIControlStateNormal];
         [button setTitleColor:UIColorFromRGB(0xffffff) forState:UIControlStateNormal];
-        [button setImage:[UIImage imageForResourcePath:@"MWPhotoBrowser.bundle/ApplyCallActionIcon@2x" ofType:@"png" inBundle:[NSBundle bundleForClass:[self class]]] forState:UIControlStateNormal];
+        [button setTitleColor:UIColorFromRGB(0xffc200) forState:UIControlStateSelected];
+        [button setImage:[UIImage imageForResourcePath:@"MWPhotoBrowser.bundle/GreetActionIcon@2x" ofType:@"png" inBundle:[NSBundle bundleForClass:[self class]]] forState:UIControlStateNormal];
+        [button setImage:[UIImage imageForResourcePath:@"MWPhotoBrowser.bundle/GreetActionIcon@2x" ofType:@"png" inBundle:[NSBundle bundleForClass:[self class]]] forState:UIControlStateHighlighted];
         [button.titleLabel setFont:[UIFont systemFontOfSize:10]];
-        [button setTitleEdgeInsets:UIEdgeInsetsMake(0, 3, 0, 0)];
-        [button setTitle:@"申请通话" forState:UIControlStateNormal];
-        [button addTarget:self action:@selector(didTapApplyCallButton) forControlEvents:UIControlEventTouchUpInside];
+        [button setImageEdgeInsets:UIEdgeInsetsMake(0, -6, 0, 0)];
+        [button addTarget:self action:@selector(didTapGreetButton) forControlEvents:UIControlEventTouchUpInside];
         
-        _applyCallButton = button;
+        _greetButton = button;
     }
-    return _applyCallButton;
+    return _greetButton;
 }
 
 - (UIView *)seperatorLine {
@@ -205,15 +176,9 @@
     }
 }
 
-- (void)didTapFreeCallButton {
-    if ([self.photoBrowser.delegate respondsToSelector:@selector(photoBrowser:didTappedFreeCallButtonAtIndex:)]) {
-        [self.photoBrowser.delegate photoBrowser:self.photoBrowser didTappedFreeCallButtonAtIndex:self.index];
-    }
-}
-
-- (void)didTapApplyCallButton {
-    if ([self.photoBrowser.delegate respondsToSelector:@selector(photoBrowser:didTappedApplyCallButtonAtIndex:)]) {
-        [self.photoBrowser.delegate photoBrowser:self.photoBrowser didTappedApplyCallButtonAtIndex:self.index];
+- (void)didTapGreetButton {
+    if ([self.photoBrowser.delegate respondsToSelector:@selector(photoBrowser:didTappedGreetButtonAtIndex:)]) {
+        [self.photoBrowser.delegate photoBrowser:self.photoBrowser didTappedGreetButtonAtIndex:self.index];
     }
 }
 
