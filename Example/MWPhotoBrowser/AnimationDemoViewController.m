@@ -7,7 +7,6 @@
 //
 
 #import "AnimationDemoViewController.h"
-//#import "MWPhotoBrowser.h"
 
 @interface AnimationDemoViewController ()
 //<MWPhotoBrowserDelegate>
