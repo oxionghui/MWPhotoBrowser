@@ -9,6 +9,7 @@ PODS:
   - MWPhotoBrowser (2.1.1):
     - DACircularProgress (~> 2.3)
     - MBProgressHUD (~> 0.9)
+    - pop (~> 1.0)
     - SDWebImage (!= 3.7.2, ~> 3.7)
   - pop (1.0.8)
   - SDWebImage (3.7.1):
@@ -34,9 +35,11 @@ SPEC CHECKSUMS:
   Expecta+Snapshots: ca15bfb57e7a0f78f86c7699c2c54ffacfa4ad2a
   FBSnapshotTestCase: 3dc3899168747a0319c5278f5b3445c13a6532dd
   MBProgressHUD: c47f2c166c126cf2ce36498d80f33e754d4e93ad
-  MWPhotoBrowser: cebf3540db6b5116f1ad3e3e4c1b9aa11c0bf25f
+  MWPhotoBrowser: 6cd8c9b914122e0470be966f1e53955364921fc6
   pop: bb773ae2c791ca2629de13b347e7a8b450fa6a57
   SDWebImage: ed3095af2ff88b436426037444979b917f6c5575
   Specta: 9cec98310dca411f7c7ffd6943552b501622abfe
 
-COCOAPODS: 0.38.2
+PODFILE CHECKSUM: a393f1ee8dfdf220d282fdf6765520d033418464
+
+COCOAPODS: 1.1.0.rc.2
