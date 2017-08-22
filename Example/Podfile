@@ -3,12 +3,12 @@ source 'https://github.com/CocoaPods/Specs.git'
 platform :ios, '7.0'
 
 target :'MWPhotoBrowser_Example' do
-  pod "MWPhotoBrowser", :path => "../"
+  pod "MWPhotoBrowser@guangmingzizai", :path => "../"
   pod 'pop'
 end
 
 target :'MWPhotoBrowser_Tests' do
-  pod "MWPhotoBrowser", :path => "../"
+  pod "MWPhotoBrowser@guangmingzizai", :path => "../"
 
   pod 'Specta'
   pod 'Expecta'

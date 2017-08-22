@@ -49,7 +49,7 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 
-## MWPhotoBrowser
+## MWPhotoBrowser@guangmingzizai
 
 Copyright (c) 2010 Michael Waterfall <michaelwaterfall@gmail.com>
 
@@ -74,7 +74,7 @@ THE SOFTWARE.
 
 ## SDWebImage
 
-Copyright (c) 2009 Olivier Poitrey <rs@dailymotion.com>
+Copyright (c) 2009-2017 Olivier Poitrey rs@dailymotion.com
  
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
