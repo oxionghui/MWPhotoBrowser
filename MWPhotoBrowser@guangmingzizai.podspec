@@ -1,6 +1,6 @@
 Pod::Spec.new do |s|
 
-  s.name = 'MWPhotoBrowser@guangmingzizai'
+  s.name = 'MWPhotoBrowser@ouxionghui’
   s.version = '2.2.2'
   s.license = 'MIT'
   s.summary = 'A simple iOS photo and video browser with optional grid view, captions and selections.'
@@ -20,11 +20,13 @@ Pod::Spec.new do |s|
     'https://raw.github.com/guangmingzizai/MWPhotoBrowser/master/Screenshots/MWPhotoBrowser6.png'
   ]
 
-  s.homepage = 'https://github.com/guangmingzizai/MWPhotoBrowser'
+  s.homepage = 'https://github.com/oxionghui/MWPhotoBrowser'
+  #s.homepage = 'https://github.com/guangmingzizai/MWPhotoBrowser'
   s.author = { 'Wang JianFei' => 'guangmingzizai@gmail.com' }
 
   s.source = {
-    :git => 'https://github.com/guangmingzizai/MWPhotoBrowser.git',
+    :git => 'https://github.com/oxionghui/MWPhotoBrowser.git',
+    #:git => 'https://github.com/guangmingzizai/MWPhotoBrowser.git',
     :tag => '2.2.2'
   }
   s.platform = :ios, '7.0'
